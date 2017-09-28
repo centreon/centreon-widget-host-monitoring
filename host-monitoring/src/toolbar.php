@@ -84,7 +84,7 @@ if ($canDoAction || $centreon->user->access->checkAction("host_checks")) {
     $actions .= "<option value='93'>"._("Disable Host Check")."</option>";
 }
 
-file_put_contents("/tmp/toto", $actions);
+//file_put_contents("/tmp/toto", $actions);
 
 $template->assign("widgetId", $_POST['widgetId']);
 $template->assign("actions", $actions);
