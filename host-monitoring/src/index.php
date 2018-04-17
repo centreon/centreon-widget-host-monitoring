@@ -211,13 +211,13 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != "") {
         } else {
             $order = 'DESC';
         }
-        $orderby = $aOrder[0] ." ". $order;
+        $orderby = $aOrder[0] . " " . $order;
     } else {
-        $orderby = 'h.'.$preferences['order_by'];
+        $orderby = 'h.' . $preferences['order_by'];
     }
 }
 $query .= " ORDER BY $orderby";
-$query .= " LIMIT ".($page * $preferences['entries']).",".$preferences['entries'];
+$query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
 
 $res = $dbb->query($query);
 $nbRows = $res->rowCount();
