@@ -147,6 +147,14 @@ if (isset($preferences['acknowledgement_filter']) && $preferences['acknowledgeme
     }
 }
 
+if (isset($preferences['notification_filter']) && $preferences['notification_filter']) {
+    if ($preferences['notification_filter'] == "enabled") {
+        $query = CentreonUtils::conditionBuilder($query, " notify = 1");
+    } elseif ($preferences['notification_filter'] == "disabled") {
+        $query = CentreonUtils::conditionBuilder($query, " notify = 0");
+    }
+}
+
 if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
     if ($preferences['downtime_filter'] == "downtime") {
         $query = CentreonUtils::conditionBuilder($query, " scheduled_downtime_depth	> 0 ");
