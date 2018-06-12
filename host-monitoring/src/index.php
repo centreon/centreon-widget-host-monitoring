@@ -116,7 +116,7 @@ $query .= " WHERE enabled = 1 ";
 $query .= " AND h.name NOT LIKE '_Module_%' ";
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
-    $tab = split(" ", $preferences['host_name_search']);
+    $tab = explode(" ", $preferences['host_name_search']);
     $op = $tab[0];
     if (isset($tab[1])) {
         $search = $tab[1];
@@ -175,7 +175,7 @@ if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
 }
 if (isset($preferences["display_severities"]) && $preferences["display_severities"]
     && isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != "") {
-  $tab = split(",", $preferences['criticality_filter']);
+  $tab = explode(",", $preferences['criticality_filter']);
   $labels = "";
   foreach ($tab as $p) {
     if ($labels != '') {
