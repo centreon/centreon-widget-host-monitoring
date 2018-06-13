@@ -259,7 +259,7 @@ while ($row = $res->fetchRow()) {
         } elseif (($key == 'action_url' || $key == 'notes_url') && !empty($value)) {
             if (preg_match('#^\./(.+)#', $value, $matches)) {
                 $value = '/' . $centreonWebPath . '/' . $matches[1];
-            } elseif (!preg_match("#(^http[s]?)|(^//)#", $value)) {
+            } elseif (!preg_match("#(^http[s]?)|(^//)|(^ssh)#", $value)) {
                 $value = '//' . $value;
             }
             $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $value));
