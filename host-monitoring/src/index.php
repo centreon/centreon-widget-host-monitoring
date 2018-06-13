@@ -69,6 +69,7 @@ $centreon = $_SESSION['centreon'];
 $centreonWebPath = trim($centreon->optGen['oreon_web_path'], '/');
 $widgetId = $_REQUEST['widgetId'];
 $page = $_REQUEST['page'];
+$mainQueryParameters = [];
 
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
@@ -81,31 +82,31 @@ $stateLabels = getLabels();
 $aStateType = ['1' => 'H', '0' => 'S'];
 
 $query = 'SELECT SQL_CALC_FOUND_ROWS h.host_id,
-				 h.name AS host_name,
-				 h.alias,
-                 h.flapping,
-				 state,
-				 state_type,
-				 address,
-				 last_hard_state,
-				 output,
-				 scheduled_downtime_depth,
-				 acknowledged,
-				 notify,
-				 active_checks,
-				 passive_checks,
-				 last_check,
-				 last_state_change,
-				 last_hard_state_change,
-				 check_attempt,
-				 max_check_attempts,
-				 action_url,
-				 notes_url,
-                 cv.value AS criticality,
-                 h.icon_image,
-                 h.icon_image_alt,
-		         cv2.value AS criticality_id,
-                 cv.name IS NULL as isnull ';
+            h.name AS host_name,
+            h.alias,
+            h.flapping,
+            state,
+            state_type,
+            address,
+            last_hard_state,
+            output,
+            scheduled_downtime_depth,
+            acknowledged,
+            notify,
+            active_checks,
+            passive_checks,
+            last_check,
+            last_state_change,
+            last_hard_state_change,
+            check_attempt,
+            max_check_attempts,
+            action_url,
+            notes_url,
+            cv.value AS criticality,
+            h.icon_image,
+            h.icon_image_alt,
+            cv2.value AS criticality_id,
+            cv.name IS NULL as isnull ';
 $query .= 'FROM hosts h ';
 $query .= ' LEFT JOIN `customvariables` cv ';
 $query .= ' ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\') ';
@@ -124,7 +125,8 @@ if (isset($preferences['host_name_search']) && $preferences['host_name_search'] 
     }
 
     if ($op && isset($search) && $search != '') {
-        $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' \'' . $dbb->escape($search) . '\' ';
+        $mainQueryParameters[':host_name_search'] = $search;
+        $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' :host_name_search ';
         $query = CentreonUtils::conditionBuilder($query, $hostNameCondition);
     }
 }
@@ -170,10 +172,10 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
+    $mainQueryParameters[':host_group_id'] = $preferences['hostgroup'];
     $hostGroupCondition = ' h.host_id IN (SELECT host_host_id FROM ' .
         $conf_centreon['db'] .
-        '.hostgroup_relation WHERE hostgroup_hg_id = ' .
-        $dbb->escape($preferences['hostgroup']). ') ';
+        '.hostgroup_relation WHERE hostgroup_hg_id = :host_group_id)';
     $query = CentreonUtils::conditionBuilder($query, $hostGroupCondition);
 }
 if (
@@ -228,7 +230,7 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
 $query .= " ORDER BY {$orderBy}";
 $query .= ' LIMIT ' . ($page * $preferences['entries']) . ',' . $preferences['entries'];
 
-$res = $dbb->query($query);
+$res = $dbb->query($query, $mainQueryParameters);
 $nbRows = $res->rowCount();
 $data = array();
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
