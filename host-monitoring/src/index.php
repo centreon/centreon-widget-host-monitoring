@@ -225,39 +225,95 @@ $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 
 $commentLength = $preferences['comment_length'] ? $preferences['comment_length'] : 50;
 
 $hostObj = new CentreonHost($db);
+$gmt = new CentreonGMT($db);
+$gmt->getMyGMTFromSession(session_id(), $db);
+
 while ($row = $res->fetchRow()) {
     foreach ($row as $key => $value) {
-        if ($key == "last_check") {
-            $gmt = new CentreonGMT($db);
-            $gmt->getMyGMTFromSession(session_id(), $db);
-            $value = $gmt->getDate("Y-m-d H:i:s", $value);
-        } elseif ($key == "last_state_change" || $key == "last_hard_state_change") {
-            if ($value > 0){
-                $value = time() - $value;
-                $value = CentreonDuration::toString($value);
-            }else{
-                $value = 'N/A';
-            }
-        } elseif ($key == "check_attempt") {
-            $value = $value . "/" . $row['max_check_attempts'] . ' ('.$aStateType[$row['state_type']].')';
-        } elseif ($key == "state") {
-            $data[$row['host_id']]['status'] = $value;
-            $data[$row['host_id']]['color'] = $stateColors[$value];
-            $value = $stateLabels[$value];
-        } elseif ($key == "output") {
-            $value = substr($value, 0, $outputLength);
-        } elseif (($key == "action_url" || $key == "notes_url") && !empty($value)) {
-            if (preg_match('#^\./(.+)#', $value, $matches)) {
-                $value = '/' . $centreonWebPath . '/' . $matches[1];
-            } elseif (!preg_match("#(^http[s]?)|(^//)#", $value)) {
-                $value = '//' . $value;
-            }
-            $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $value));
-        } elseif ($key == "criticality" && $value != '') {
-            $critData = $criticality->getData($row["criticality_id"]);
-            $value = "<img src='../../img/media/".$media->getFilename($critData['icon_id'])."' title='".$critData["hc_name"]."' width='16' height='16'>";
-        }
         $data[$row['host_id']][$key] = $value;
+    }
+
+    // last_check
+    $valueLastCheck = $row['last_check'];
+    $valueLastCheckTimestamp = time() - strtotime($valueLastCheck);
+    if ($valueLastCheckTimestamp < 3600) {
+        $valueLastCheck = CentreonDuration::toString($valueLastCheckTimestamp) . ' ago';
+    } else {
+        $valueLastCheck = $gmt->getDate("Y-m-d H:i:s", $valueLastCheck);
+    }
+    $data[$row['host_id']]['last_check'] = $valueLastCheck;
+
+    // last_state_change
+    $valueLastState = $row['last_state_change'];
+    if ($valueLastState > 0) {
+        $valueLastStateTimestamp = time() - strtotime($valueLastState);
+        if ($valueLastStateTimestamp < 3600) {
+            $valueLastState = CentreonDuration::toString($valueLastStateTimestamp) . ' ago';
+        } else {
+            $valueLastState = $gmt->getDate("Y-m-d H:i:s", $valueLastState);
+        }
+    } else {
+        $valueLastState = 'N/A';
+    }
+    $data[$row['host_id']]['last_state_change'] = $valueLastState;
+
+    // last_hard_state_change
+    $valueLastHardState = $row['last_hard_state_change'];
+    if ($valueLastState) {
+        $valueLastHardStateTimestamp = time() - strtotime($valueLastState);
+        if ($valueLastHardStateTimestamp < 3600) {
+            $valueLastHardState = CentreonDuration::toString($valueLastHardStateTimestamp) . ' ago';
+        } else {
+            $valueLastHardState = $gmt->getDate("Y-m-d H:i:s", $valueLastHardState);
+        }
+    } else {
+        $valueLastHardState = 'N/A';
+    }
+    $data[$row['host_id']]['last_hard_state_change'] = $valueLastHardState;
+
+    // check_attempt
+    $valueCheckAttemp = "{$row['check_attempt']}/{$row['max_check_attempts']} ({$aStateType[$row['state_type']]})";
+    $data[$row['host_id']]['check_attempt'] = $valueCheckAttemp;
+
+    // state
+    $valueState = $row['state'];
+    $data[$row['host_id']]['status'] = $valueState;
+    $data[$row['host_id']]['color'] = $stateColors[$valueState];
+    $data[$row['host_id']]['state'] = $stateLabels[$valueState];
+
+    // output
+    $data[$row['host_id']]['output'] = substr($row['output'], 0, $outputLength);
+
+    // action_url
+    $valueActionUrl = $row['action_url'];
+    if (!empty($valueActionUrl)) {
+        if (preg_match('#^\./(.+)#', $valueActionUrl, $matches)) {
+            $valueActionUrl = '/' . $centreonWebPath . '/' . $matches[1];
+        } elseif (!preg_match("#(^http[s]?)|(^//)#", $valueActionUrl)) {
+            $valueActionUrl = '//' . $valueActionUrl;
+        }
+        $valueActionUrl = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $valueActionUrl));
+        $data[$row['host_id']]['action_url'] = $valueActionUrl;
+    }
+
+    // notes_url
+    $valueNotesUrl = $row['notes_url'];
+    if (!empty($valueNotesUrl)) {
+        if (preg_match('#^\./(.+)#', $valueNotesUrl, $matches)) {
+            $valueNotesUrl = '/' . $centreonWebPath . '/' . $matches[1];
+        } elseif (!preg_match("#(^http[s]?)|(^//)#", $valueNotesUrl)) {
+            $valueNotesUrl = '//' . $valueNotesUrl;
+        }
+        $valueNotesUrl = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $valueNotesUrl));
+        $data[$row['host_id']]['notes_url'] = $valueNotesUrl;
+    }
+
+    // criticality
+    $valueCriticality = $row['criticality'];
+    if ($valueCriticality != '') {
+        $critData = $criticality->getData($row["criticality_id"]);
+        $valueCriticality = "<img src='../../img/media/" . $media->getFilename($critData['icon_id']) . "' title='" . $critData["hc_name"] . "' width='16' height='16'>";
+        $data[$row['host_id']]['criticality'] = $valueCriticality;
     }
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
