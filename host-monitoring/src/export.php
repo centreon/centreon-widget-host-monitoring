@@ -51,7 +51,6 @@ require_once $centreon_path . 'www/class/centreonHost.class.php';
 require_once $centreon_path . 'www/class/centreonMedia.class.php';
 require_once $centreon_path . 'www/class/centreonCriticality.class.php';
 
-require_once $centreon_path ."GPL_LIB/Smarty/libs/Smarty.class.php";
 
 session_start();
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
@@ -231,7 +230,7 @@ while ($row = $res->fetchRow()) {
             if (!preg_match("/(^http[s]?)|(^\/\/)/", $value)) {
                 $value = '//' . $value;
             }
-            $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $value));
+            $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['name'], $value));
         } elseif ($key == "criticality" && $value != '') {
             $critData = $criticality->getData($row["criticality_id"]);
             $value = $critData["hc_name"];
