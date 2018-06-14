@@ -229,17 +229,17 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
 }
 $query .= " ORDER BY {$orderBy}";
 $query .= ' LIMIT ' . ($page * $preferences['entries']) . ',' . $preferences['entries'];
-$statement = $dbb->prepare($query);
+$res = $dbb->prepare($query);
 
 foreach ($mainQueryParameters as $parameter) {
-    $statement->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+    $res->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
 }
 
 unset($parameter);
 
-$statement->execute();
+$res->execute();
 
-$nbRows = $statement->rowCount();
+$nbRows = $res->rowCount();
 $data = array();
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
 $commentLength = $preferences['comment_length'] ? $preferences['comment_length'] : 50;
