@@ -230,7 +230,7 @@ while ($row = $res->fetchRow()) {
             if (!preg_match("/(^http[s]?)|(^\/\/)/", $value)) {
                 $value = '//' . $value;
             }
-            $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $value));
+            $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['name'], $value));
         } elseif ($key == "criticality" && $value != '') {
             $critData = $criticality->getData($row["criticality_id"]);
             $value = $critData["hc_name"];
