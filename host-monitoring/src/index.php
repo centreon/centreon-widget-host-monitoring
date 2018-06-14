@@ -125,7 +125,7 @@ if (isset($preferences['host_name_search']) && $preferences['host_name_search'] 
     }
 
     if ($op && isset($search) && $search != '') {
-        $mainQueryParameters[':host_name_search'] = $search;
+        $mainQueryParameters[] = ['parameter' => ':host_name_search', 'value' => $search, 'type' => PDO::PARAM_STR];
         $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' :host_name_search ';
         $query = CentreonUtils::conditionBuilder($query, $hostNameCondition);
     }
@@ -172,7 +172,7 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
-    $mainQueryParameters[':host_group_id'] = $preferences['hostgroup'];
+    $mainQueryParameters[] = ['parameter' => ':host_group_id', 'value' => $preferences['hostgroup'], 'type' => PDO::PARAM_INT];
     $hostGroupCondition = ' h.host_id IN (SELECT host_host_id FROM ' .
         $conf_centreon['db'] .
         '.hostgroup_relation WHERE hostgroup_hg_id = :host_group_id)';
@@ -196,7 +196,7 @@ if (
   $RES = $db->query($query2);
   $idC = '';
 
-  while ($d1 = $RES->fetchRow()) {
+  while ($d1 = $RES->fetch()) {
     if ($idC != '') {
       $idC .= ',';
     }
@@ -229,15 +229,23 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
 }
 $query .= " ORDER BY {$orderBy}";
 $query .= ' LIMIT ' . ($page * $preferences['entries']) . ',' . $preferences['entries'];
+$statement = $dbb->prepare($query);
 
-$res = $dbb->query($query, $mainQueryParameters);
-$nbRows = $res->rowCount();
+foreach ($mainQueryParameters as $parameter) {
+    $statement->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+}
+
+unset($parameter);
+
+$statement->execute();
+
+$nbRows = $statement->rowCount();
 $data = array();
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
 $commentLength = $preferences['comment_length'] ? $preferences['comment_length'] : 50;
 
 $hostObj = new CentreonHost($db);
-while ($row = $res->fetchRow()) {
+while ($row = $statement->fetch()) {
     foreach ($row as $key => $value) {
         if ($key == 'last_check') {
             $gmt = new CentreonGMT($db);
@@ -274,7 +282,7 @@ while ($row = $res->fetchRow()) {
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
         $res2 = $dbb->query('SELECT data FROM comments where host_id = ' . $row['host_id'] . ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1');
-        if ($row2 = $res2->fetchRow()) {
+        if ($row2 = $res2->fetch()) {
             $data[$row['host_id']]['comment'] = substr($row2['data'], 0, $commentLength);
         } else {
             $data[$row['host_id']]['comment'] = '-';
