@@ -70,6 +70,7 @@ $template = initSmartyTplForPopup($path, $template, './', $centreon_path);
 
 $centreon = $_SESSION['centreon'];
 $widgetId = $_REQUEST['widgetId'];
+$mainQueryParameters = [];
 
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
@@ -118,7 +119,8 @@ if (isset($preferences['host_name_search']) && $preferences['host_name_search'] 
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != '') {
-        $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' \'' . $dbb->escape($search) . '\' ';
+        $mainQueryParameters[] = ['parameter' => ':host_name_search', 'value' => $search, 'type' => PDO::PARAM_STR];
+        $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' :host_name_search ';
         $query = CentreonUtils::conditionBuilder($query, $hostNameCondition);
     }
 }
@@ -166,10 +168,11 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
+    $mainQueryParameters[] = ['parameter' => ':host_group_id', 'value' => $preferences['hostgroup'], 'type' => PDO::PARAM_INT];
     $hostGroupCondition = ' h.host_id IN
                             (SELECT host_host_id
                             FROM ' . $conf_centreon['db'] . '.hostgroup_relation
-                            WHERE hostgroup_hg_id = ' . $dbb->escape($preferences['hostgroup']) . ') ';
+                            WHERE hostgroup_hg_id = :host_group_id) ';
     $query = CentreonUtils::conditionBuilder($query, $hostGroupCondition);
 }
 if (
@@ -211,7 +214,15 @@ if (isset($preferences['order_by']) && $preferences['order_by'] != '') {
 }
 $query .= " ORDER BY {$orderBy}";
 
-$res = $dbb->query($query);
+$res = $dbb->prepare($query);
+
+foreach ($mainQueryParameters as $parameter) {
+    $res->bindValue($parameter['parameter'], $parameter['value'], $parameter['type']);
+}
+
+unset($parameter);
+
+$res->execute();
 $nbRows = $res->rowCount();
 $data = [];
 $outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
