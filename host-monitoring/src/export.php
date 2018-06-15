@@ -65,6 +65,7 @@ $dbb = $dependencyInjector['realtime_db'];
 
 /* Init Objects */
 $criticality = new CentreonCriticality($db);
+$aStateType = array("1" => "H", "0" => "S");
 
 $path = $centreon_path . "www/widgets/host-monitoring/src/";
 $template = new Smarty();
@@ -221,7 +222,7 @@ while ($row = $res->fetchRow()) {
             $value = time() - $value;
             $value = CentreonDuration::toString($value);
         } elseif ($key == "check_attempt") {
-            $value = $value . "/" . $row['max_check_attempts'];
+            $value = $value . "/" . $row['max_check_attempts']. ' ('.$aStateType[$row['state_type']].')';
         } elseif ($key == "state") {
             $value = $stateLabels[$value];
         } elseif ($key == "output") {
