@@ -247,6 +247,8 @@ $commentLength = $preferences['comment_length'] ? $preferences['comment_length']
 $hostObj = new CentreonHost($db);
 $gmt = new CentreonGMT($db);
 $gmt->getMyGMTFromSession(session_id(), $db);
+$allowedActionProtocols = ['http[s]?', '//', 'ssh', 'rdp', 'ftp', 'sftp'];
+$allowedProtocolsRegex = '#(^'. implode(')|(^', $allowedActionProtocols) .')#'; // String starting with one of these protocols
 
 while ($row = $res->fetch()) {
     foreach ($row as $key => $value) {
@@ -309,9 +311,10 @@ while ($row = $res->fetch()) {
     if (!empty($valueActionUrl)) {
         if (preg_match('#^\./(.+)#', $valueActionUrl, $matches)) {
             $valueActionUrl = '/' . $centreonWebPath . '/' . $matches[1];
-        } elseif (!preg_match("#(^http[s]?)|(^//)|(^ssh)#", $valueActionUrl)) {
+        } elseif (!preg_match($allowedProtocolsRegex, $valueActionUrl)) {
             $valueActionUrl = '//' . $valueActionUrl;
         }
+
         $valueActionUrl = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $valueActionUrl));
         $data[$row['host_id']]['action_url'] = $valueActionUrl;
     }
@@ -321,9 +324,10 @@ while ($row = $res->fetch()) {
     if (!empty($valueNotesUrl)) {
         if (preg_match('#^\./(.+)#', $valueNotesUrl, $matches)) {
             $valueNotesUrl = '/' . $centreonWebPath . '/' . $matches[1];
-        } elseif (!preg_match("#(^http[s]?)|(^//)|(^ssh)#", $valueNotesUrl)) {
+        } elseif (!preg_match($allowedProtocolsRegex, $valueNotesUrl)) {
             $valueNotesUrl = '//' . $valueNotesUrl;
         }
+
         $valueNotesUrl = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $valueNotesUrl));
         $data[$row['host_id']]['notes_url'] = $valueNotesUrl;
     }
