@@ -51,7 +51,7 @@ require_once $centreon_path . 'www/class/centreonHost.class.php';
 require_once $centreon_path . 'www/class/centreonMedia.class.php';
 require_once $centreon_path . 'www/class/centreonCriticality.class.php';
 
-require_once $centreon_path ."GPL_LIB/Smarty/libs/Smarty.class.php";
+require_once $centreon_path . "GPL_LIB/Smarty/libs/Smarty.class.php";
 
 session_start();
 if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
@@ -115,13 +115,14 @@ $query .= " WHERE enabled = 1 ";
 $query .= " AND h.name NOT LIKE '_Module_%' ";
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
-    $tab = split(" ", $preferences['host_name_search']);
+    $tab = explode(" ", $preferences['host_name_search']);
     $op = $tab[0];
     if (isset($tab[1])) {
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != "") {
-        $query = CentreonUtils::conditionBuilder($query, "h.name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ");
+        $query = CentreonUtils::conditionBuilder($query,
+            "h.name " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "' ");
     }
 }
 
@@ -149,10 +150,10 @@ if (isset($preferences['acknowledgement_filter']) && $preferences['acknowledgeme
 
 if (isset($preferences['notification_filter']) && $preferences['notification_filter']) {
     if ($preferences['notification_filter'] == "enabled") {
-            $query = CentreonUtils::conditionBuilder($query, " notify = 1");
-        } elseif ($preferences['notification_filter'] == "disabled") {
-            $query = CentreonUtils::conditionBuilder($query, " notify = 0");
-        }
+        $query = CentreonUtils::conditionBuilder($query, " notify = 1");
+    } elseif ($preferences['notification_filter'] == "disabled") {
+        $query = CentreonUtils::conditionBuilder($query, " notify = 0");
+    }
 }
 
 if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
@@ -176,31 +177,33 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
-    $query = CentreonUtils::conditionBuilder($query, " h.host_id IN
-                                                       (SELECT host_host_id
-                                                       FROM ".$conf_centreon['db'].".hostgroup_relation
-                                                       WHERE hostgroup_hg_id = ".$dbb->escape($preferences['hostgroup']).") ");
+    $condition = " h.host_id IN (SELECT host_host_id FROM " . $conf_centreon['db'] .
+        ".hostgroup_relation WHERE hostgroup_hg_id = " . $dbb->escape($preferences['hostgroup']) . ") ";
+    $query = CentreonUtils::conditionBuilder(
+        $query,
+        $condition
+    );
 }
 if (isset($preferences["display_severities"]) && $preferences["display_severities"]
     && isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != "") {
-  $tab = split(",", $preferences['criticality_filter']);
-  $labels = "";
-  foreach ($tab as $p) {
-    if ($labels != '') {
-      $labels .= ',';
+    $tab = explode(",", $preferences['criticality_filter']);
+    $labels = "";
+    foreach ($tab as $p) {
+        if ($labels != '') {
+            $labels .= ',';
+        }
+        $labels .= "'" . trim($p) . "'";
     }
-    $labels .= "'".trim($p)."'";
-  }
-  $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN (".$labels.")";
-  $RES = $db->query($query2);
-  $idC = "";
-  while ($d1 = $RES->fetchRow()) {
-    if ($idC != '') {
-      $idC .= ",";
+    $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN (" . $labels . ")";
+    $RES = $db->query($query2);
+    $idC = "";
+    while ($d1 = $RES->fetchRow()) {
+        if ($idC != '') {
+            $idC .= ",";
+        }
+        $idC .= $d1['hc_id'];
     }
-    $idC .= $d1['hc_id'];
-  }
-  $query .= " AND cv2.`value` IN ($idC) ";
+    $query .= " AND cv2.`value` IN ($idC) ";
 }
 if (!$centreon->user->admin) {
     $pearDB = $db;
@@ -248,7 +251,9 @@ while ($row = $res->fetchRow()) {
     }
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
-        $res2 = $dbb->query('SELECT data FROM comments where host_id = ' . $row['host_id'] . ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1');
+        $query = 'SELECT data FROM comments where host_id = ' . $row['host_id'] .
+            ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1';
+        $res2 = $dbb->query($query);
         if ($row2 = $res2->fetchRow()) {
             $data[$row['host_id']]['comment'] = substr($row2['data'], 0, $commentLength);
         } else {
