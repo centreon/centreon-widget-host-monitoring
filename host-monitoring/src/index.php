@@ -81,32 +81,11 @@ $stateLabels = getLabels();
 
 $aStateType = array("1" => "H", "0" => "S");
 
-$query = "SELECT SQL_CALC_FOUND_ROWS h.host_id,
-				 h.name AS host_name,
-				 h.alias,
-                 h.flapping,
-				 state,
-				 state_type,
-				 address,
-				 last_hard_state,
-				 output,
-				 scheduled_downtime_depth,
-				 acknowledged,
-				 notify,
-				 active_checks,
-				 passive_checks,
-				 last_check,
-				 last_state_change,
-				 last_hard_state_change,
-				 check_attempt,
-				 max_check_attempts,
-				 action_url,
-				 notes_url,
-                 cv.value AS criticality,
-                 h.icon_image,
-                 h.icon_image_alt,
-		         cv2.value AS criticality_id,
-                 cv.name IS NULL as isnull ";
+$query = "SELECT SQL_CALC_FOUND_ROWS h.host_id,  h.name AS host_name, h.alias, h.flapping, state, state_type, " .
+    "address, last_hard_state, output, scheduled_downtime_depth, acknowledged, notify, active_checks, " .
+    "passive_checks, last_check, last_state_change, last_hard_state_change, check_attempt,  max_check_attempts, " .
+    "action_url, notes_url, cv.value AS criticality, h.icon_image, h.icon_image_alt, cv2.value AS criticality_id, " .
+    "cv.name IS NULL as isnull ";
 $query .= "FROM hosts h ";
 $query .= " LEFT JOIN `customvariables` cv ";
 $query .= " ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = 'CRITICALITY_LEVEL') ";
@@ -116,13 +95,16 @@ $query .= " WHERE enabled = 1 ";
 $query .= " AND h.name NOT LIKE '_Module_%' ";
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
-    $tab = split(" ", $preferences['host_name_search']);
+    $tab = explode(" ", $preferences['host_name_search']);
     $op = $tab[0];
     if (isset($tab[1])) {
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != "") {
-        $query = CentreonUtils::conditionBuilder($query, "h.name ".CentreonUtils::operandToMysqlFormat($op)." '".$dbb->escape($search)."' ");
+        $query = CentreonUtils::conditionBuilder(
+            $query,
+            "h.name " . CentreonUtils::operandToMysqlFormat($op) . " '" . $dbb->escape($search) . "' "
+        );
     }
 }
 
@@ -147,6 +129,14 @@ if (isset($preferences['acknowledgement_filter']) && $preferences['acknowledgeme
     }
 }
 
+if (isset($preferences['notification_filter']) && $preferences['notification_filter']) {
+    if ($preferences['notification_filter'] == "enabled") {
+        $query = CentreonUtils::conditionBuilder($query, " notify = 1");
+    } elseif ($preferences['notification_filter'] == "disabled") {
+        $query = CentreonUtils::conditionBuilder($query, " notify = 0");
+    }
+}
+
 if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
     if ($preferences['downtime_filter'] == "downtime") {
         $query = CentreonUtils::conditionBuilder($query, " scheduled_downtime_depth	> 0 ");
@@ -156,7 +146,7 @@ if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
 }
 
 if (isset($preferences['poller_filter']) && $preferences['poller_filter']) {
-    $query = CentreonUtils::conditionBuilder($query, " instance_id = ".$preferences['poller_filter']." ");
+    $query = CentreonUtils::conditionBuilder($query, " instance_id = " . $preferences['poller_filter'] . " ");
 }
 
 if (isset($preferences['state_type_filter']) && $preferences['state_type_filter']) {
@@ -168,31 +158,30 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
-    $query = CentreonUtils::conditionBuilder($query, " h.host_id IN
-    												   (SELECT host_host_id
-    												   FROM ".$conf_centreon['db'].".hostgroup_relation
-    												   WHERE hostgroup_hg_id = ".$dbb->escape($preferences['hostgroup']).") ");
+    $condition = " h.host_id IN (SELECT host_host_id FROM " . $conf_centreon['db'] .
+        ".hostgroup_relation WHERE hostgroup_hg_id = " . $dbb->escape($preferences['hostgroup']) . ") ";
+    $query = CentreonUtils::conditionBuilder($query, $condition);
 }
 if (isset($preferences["display_severities"]) && $preferences["display_severities"]
     && isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != "") {
-  $tab = split(",", $preferences['criticality_filter']);
-  $labels = "";
-  foreach ($tab as $p) {
-    if ($labels != '') {
-      $labels .= ',';
+    $tab = explode(",", $preferences['criticality_filter']);
+    $labels = "";
+    foreach ($tab as $p) {
+        if ($labels != '') {
+            $labels .= ',';
+        }
+        $labels .= "'" . trim($p) . "'";
     }
-    $labels .= "'".trim($p)."'";
-  }
-  $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN (".$labels.")";
-  $RES = $db->query($query2);
-  $idC = "";
-  while ($d1 = $RES->fetchRow()) {
-    if ($idC != '') {
-      $idC .= ",";
+    $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN (" . $labels . ")";
+    $RES = $db->query($query2);
+    $idC = "";
+    while ($d1 = $RES->fetchRow()) {
+        if ($idC != '') {
+            $idC .= ",";
+        }
+        $idC .= $d1['hc_id'];
     }
-    $idC .= $d1['hc_id'];
-  }
-  $query .= " AND cv2.`value` IN ($idC) ";
+    $query .= " AND cv2.`value` IN ($idC) ";
 }
 if (!$centreon->user->admin) {
     $pearDB = $db;
@@ -210,13 +199,13 @@ if (isset($preferences['order_by']) && $preferences['order_by'] != "") {
         } else {
             $order = 'DESC';
         }
-        $orderby = $aOrder[0] ." ". $order;
+        $orderby = $aOrder[0] . " " . $order;
     } else {
         $orderby = $preferences['order_by'];
     }
 }
 $query .= " ORDER BY $orderby";
-$query .= " LIMIT ".($page * $preferences['entries']).",".$preferences['entries'];
+$query .= " LIMIT " . ($page * $preferences['entries']) . "," . $preferences['entries'];
 
 $res = $dbb->query($query);
 $nbRows = $dbb->numberRows();
@@ -232,14 +221,14 @@ while ($row = $res->fetchRow()) {
             $gmt->getMyGMTFromSession(session_id(), $db);
             $value = $gmt->getDate("Y-m-d H:i:s", $value);
         } elseif ($key == "last_state_change" || $key == "last_hard_state_change") {
-            if ($value > 0){
+            if ($value > 0) {
                 $value = time() - $value;
                 $value = CentreonDuration::toString($value);
-            }else{
+            } else {
                 $value = 'N/A';
             }
         } elseif ($key == "check_attempt") {
-            $value = $value . "/" . $row['max_check_attempts'] . ' ('.$aStateType[$row['state_type']].')';
+            $value = $value . "/" . $row['max_check_attempts'] . ' (' . $aStateType[$row['state_type']] . ')';
         } elseif ($key == "state") {
             $data[$row['host_id']]['status'] = $value;
             $data[$row['host_id']]['color'] = $stateColors[$value];
@@ -255,13 +244,16 @@ while ($row = $res->fetchRow()) {
             $value = CentreonUtils::escapeSecure($hostObj->replaceMacroInString($row['host_name'], $value));
         } elseif ($key == "criticality" && $value != '') {
             $critData = $criticality->getData($row["criticality_id"]);
-            $value = "<img src='../../img/media/".$media->getFilename($critData['icon_id'])."' title='".$critData["hc_name"]."' width='16' height='16'>";
+            $value = "<img src='../../img/media/" . $media->getFilename($critData['icon_id']) .
+                "' title='" . $critData["hc_name"] . "' width='16' height='16'>";
         }
         $data[$row['host_id']][$key] = $value;
     }
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
-        $res2 = $dbb->query('SELECT data FROM comments where host_id = ' . $row['host_id'] . ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1');
+        $query = 'SELECT data FROM comments where host_id = ' . $row['host_id'] .
+            ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1';
+        $res2 = $dbb->query($query);
         if ($row2 = $res2->fetchRow()) {
             $data[$row['host_id']]['comment'] = substr($row2['data'], 0, $commentLength);
         } else {
@@ -274,11 +266,12 @@ while ($row = $res->fetchRow()) {
     $class = null;
     if ($row["scheduled_downtime_depth"] > 0) {
         $class = "line_downtime";
-    } else if ($row["state"] == 1) {
+    } elseif ($row["state"] == 1) {
         $row["acknowledged"] == 1 ? $class = "line_ack" : $class = "list_down";
     } else {
-        if ($row["acknowledged"] == 1)
+        if ($row["acknowledged"] == 1) {
             $class = "line_ack";
+        }
     }
 
     $data[$row['host_id']]['class_tr'] = $class;
@@ -307,4 +300,3 @@ if ($preferences['more_views']) {
 $template->assign('more_views', $bMoreViews);
 
 $template->display('table.ihtml');
-
