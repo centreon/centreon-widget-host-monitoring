@@ -71,6 +71,23 @@ try {
     if (!$gmt) {
         $gmt = date_default_timezone_get();
     }
+    $defaultDuration = 3600;
+    if (isset($centreon->optGen['monitoring_dwt_duration']) &&
+        $centreon->optGen['monitoring_dwt_duration']
+    ) {
+        $defaultDuration = $centreon->optGen['monitoring_dwt_duration'];
+    }
+    $defaultScale = 's';
+    if (isset($centreon->optGen['monitoring_dwt_duration_scale']) && $centreon->optGen['monitoring_dwt_duration_scale']) {
+        $defaultScale = $centreon->optGen['monitoring_dwt_duration_scale'];
+    }
+    if ($defaultScale == 'm') {
+        $defaultDuration *= 60;
+    } elseif ($defaultScale == 'h') {
+        $defaultDuration *= 3600;
+    } elseif ($defaultScale == 'd') {
+        $defaultDuration *= 86400;
+    }
 
     if ($cmd == 72 || $cmd == 75) {
         $path = $centreon_path . "www/widgets/host-monitoring/src/";
@@ -135,8 +152,8 @@ try {
             $hourStart = $centreon->CentreonGMT->getDate("H", time(), $gmt);
             $minuteStart = $centreon->CentreonGMT->getDate("i", time(), $gmt);
 
-            $hourEnd = $centreon->CentreonGMT->getDate("H", time() + 7200, $gmt);
-            $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + 7200, $gmt);
+            $hourEnd = $centreon->CentreonGMT->getDate("H", time() + $defaultDuration, $gmt);
+            $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + $defaultDuration, $gmt);
             
             $template->assign('downtimeHostSvcLabel', _("Set downtime on services of hosts"));
             $template->assign('defaultMessage', sprintf(_('Downtime set by %s'), $centreon->user->alias));
