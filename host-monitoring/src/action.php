@@ -262,6 +262,13 @@ jQuery(function() {
     jQuery(".timepicker").first().on('change', function (e) {
         updateEndTime();
     });
+    jQuery(".datepicker").last().on('change', function (e) {
+        updateStartTime();
+    });
+    jQuery(".timepicker").last().on('change', function (e) {
+        updateStartTime();
+    });
+
 });
 
 function closeBox()
