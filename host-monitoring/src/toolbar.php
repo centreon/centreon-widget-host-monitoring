@@ -97,12 +97,12 @@ var sid = '<?php echo session_id();?>';
 jQuery( function() {
     jQuery(".toolbar").change( function() {
 
-	    if (jQuery(this).val() != 0) {
-    		var checkValues = jQuery("input:checked")
+        if (jQuery(this).val() != 0) {
+            var checkValues = jQuery("input:checked")
                 .map( function() {
                     var tmp = jQuery(this).attr('id').split("_");
                     return tmp[1];
-    		    })
+                })
                 .get().join(",");
 
             if (checkValues != '') {

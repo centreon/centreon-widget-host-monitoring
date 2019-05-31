@@ -86,38 +86,38 @@ $stateLabels = getLabels();
 $aStateType = ['1' => 'H', '0' => 'S'];
 
 $query = 'SELECT SQL_CALC_FOUND_ROWS h.host_id,
-            h.name AS host_name,
-            h.alias,
-            h.flapping,
-            state,
-            state_type,
-            address,
-            last_hard_state,
-            output,
-            scheduled_downtime_depth,
-            acknowledged,
-            notify,
-            active_checks,
-            passive_checks,
-            last_check,
-            last_state_change,
-            last_hard_state_change,
-            check_attempt,
-            max_check_attempts,
-            action_url,
-            notes_url,
-            cv.value AS criticality,
-            h.icon_image,
-            h.icon_image_alt,
-            cv2.value AS criticality_id,
-            cv.name IS NULL as isnull ';
-$query .= 'FROM hosts h ';
-$query .= ' LEFT JOIN `customvariables` cv ';
-$query .= ' ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\') ';
-$query .= ' LEFT JOIN `customvariables` cv2 ';
-$query .= ' ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\') ';
-$query .= ' WHERE enabled = 1 ';
-$query .= ' AND h.name NOT LIKE \'_Module_%\' ';
+        h.name AS host_name,
+        h.alias,
+        h.flapping,
+        state,
+        state_type,
+        address,
+        last_hard_state,
+        output,
+        scheduled_downtime_depth,
+        acknowledged,
+        notify,
+        active_checks,
+        passive_checks,
+        last_check,
+        last_state_change,
+        last_hard_state_change,
+        check_attempt,
+        max_check_attempts,
+        action_url,
+        notes_url,
+        cv.value AS criticality,
+        h.icon_image,
+        h.icon_image_alt,
+        cv2.value AS criticality_id,
+        cv.name IS NULL as isnull
+    FROM hosts h
+    LEFT JOIN `customvariables` cv
+    ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\')
+    LEFT JOIN `customvariables` cv2
+    ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\')
+    WHERE enabled = 1
+    AND h.name NOT LIKE \'_Module_%\' ';
 $stateTab = [];
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != '') {
@@ -194,9 +194,10 @@ if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
         '.hostgroup_relation WHERE hostgroup_hg_id = :host_group_id)';
     $query = CentreonUtils::conditionBuilder($query, $hostGroupCondition);
 }
-if (
-    isset($preferences['display_severities']) && $preferences['display_severities'] &&
-    isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != ''
+if (isset($preferences['display_severities'])
+    && $preferences['display_severities']
+    && isset($preferences['criticality_filter'])
+    && $preferences['criticality_filter'] != ''
 ) {
     $tab = explode(',', $preferences['criticality_filter']);
     $labels = '';
@@ -208,17 +209,16 @@ if (
         $labels .= '\'' . trim($p) . '\'';
     }
 
-    $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN ({$labels})";
-    $RES = $db->query($query2);
+    $res = $db->query("SELECT hc_id FROM hostcategories WHERE hc_name IN (" . $labels . ")");
     $idC = '';
 
-    while ($d1 = $RES->fetch()) {
+    while ($d1 = $res->fetch()) {
         if ($idC != '') {
             $idC .= ',';
         }
         $idC .= $d1['hc_id'];
     }
-    $query .= " AND cv2.`value` IN ({$idC}) ";
+    $query .= " AND cv2.`value` IN (" . $idC . ") ";
 }
 
 if (!$centreon->user->admin) {
@@ -232,7 +232,7 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
     $orderBy = $preferences['order_by'];
 }
 
-$query .= " ORDER BY {$orderBy}";
+$query .= " ORDER BY " . $orderBy;
 $query .= ' LIMIT ' . ($page * $preferences['entries']) . ',' . $preferences['entries'];
 $res = $dbb->prepare($query);
 
@@ -291,7 +291,8 @@ while ($row = $res->fetch()) {
     $data[$row['host_id']]['last_hard_state_change'] = $valueLastHardState;
 
     // check_attempt
-    $valueCheckAttempt = "{$row['check_attempt']}/{$row['max_check_attempts']} ({$aStateType[$row['state_type']]})";
+    $valueCheckAttempt = $row['check_attempt'] . "/" . $row['max_check_attempts'] .
+        " (" . $aStateType[$row['state_type']] . ")";
     $data[$row['host_id']]['check_attempt'] = $valueCheckAttempt;
 
     // state
@@ -313,8 +314,10 @@ while ($row = $res->fetch()) {
         }
 
         $valueActionUrl = CentreonUtils::escapeSecure(
-            $hostObj->replaceMacroInString($row['host_name'],
-            $valueActionUrl)
+            $hostObj->replaceMacroInString(
+                $row['host_name'],
+                $valueActionUrl
+            )
         );
         $data[$row['host_id']]['action_url'] = $valueActionUrl;
     }

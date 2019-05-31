@@ -106,7 +106,7 @@ try {
         }
 
         if (!isset($_POST['start_time']) || !isset($_POST['end_time'])) {
-            throw new Exception ('Missing downtime start/end');
+            throw new Exception('Missing downtime start/end');
         }
         list($tmpHstart, $tmpMstart) = array_map('trim', explode(':', $_POST['start_time']));
         list($tmpHend, $tmpMend) = array_map('trim', explode(':', $_POST['end_time']));
@@ -137,7 +137,7 @@ try {
                 }
                 if (isset($_POST['processServices'])) {
                     $services = $svcObj->getServiceId(null, $hostname);
-                    foreach($services as $svcDesc => $svcId) {
+                    foreach ($services as $svcDesc => $svcId) {
                         $externalCmd->$externalCommandMethod(sprintf($commandSvc, $hostname, $svcDesc), $pollerId);
                         if (isset($forceCmdSvc)) {
                             $externalCmd->$externalCommandMethod(sprintf($forceCmdSvc, $hostname, $svcDesc), $pollerId);
