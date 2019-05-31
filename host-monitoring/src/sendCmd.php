@@ -131,7 +131,7 @@ try {
                 $hostname = $hostObj->getHostName($hostId);
                 $pollerId = $hostObj->getHostPollerId($hostId);
                 $externalCmd->$externalCommandMethod(sprintf($command, $hostname), $pollerId);
-              
+
                 if (isset($forceCmd)) {
                     $externalCmd->$externalCommandMethod(sprintf($forceCmd, $hostname), $pollerId);
                 }

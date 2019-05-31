@@ -42,7 +42,7 @@ jQuery(function () {
             callback	: paginationCallback
         }).append("<br/>");
     }
-    
+
     $(".selection").each(function() {
         var curId = $(this).attr('id');
         if (localStorage.getItem('w_hm_' + curId)) {

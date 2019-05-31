@@ -137,7 +137,7 @@ try {
 
             $hourEnd = $centreon->CentreonGMT->getDate("H", time() + 7200, $gmt);
             $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + 7200, $gmt);
-            
+
             $template->assign('downtimeHostSvcLabel', _("Set downtime on services of hosts"));
             $template->assign('defaultMessage', sprintf(_('Downtime set by %s'), $centreon->user->alias));
             $template->assign('titleLabel', _("Host Downtime"));
