@@ -70,4 +70,3 @@
 		<input class="btc bt_info" type='button' id='submit' value='{$submitLabel}'/>
 	</div>
 </form>
-

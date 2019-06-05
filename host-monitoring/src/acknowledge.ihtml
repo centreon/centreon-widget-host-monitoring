@@ -4,7 +4,7 @@
 -->
 <form id='Form'>
 	<div class="colorbox-popin">
-		 <table class="table" style="font-size: 11px;">
+		<table class="table" style="font-size: 11px;">
 			<tr>
 				<td colspan="2" class="FormHeader"><h3 style="color: #00bfb3;">{$titleLabel}</h3></td>
 			</tr>
@@ -44,4 +44,3 @@
 		</div>
 	</div>
 </form>
-
