@@ -71,16 +71,8 @@ try {
     if (!$gmt) {
         $gmt = date_default_timezone_get();
     }
-    $defaultDuration = 3600;
-    if (isset($centreon->optGen['monitoring_dwt_duration']) &&
-        $centreon->optGen['monitoring_dwt_duration']
-    ) {
-        $defaultDuration = $centreon->optGen['monitoring_dwt_duration'];
-    }
+    $defaultDuration = 7200; // Hardcoded
     $defaultScale = 's';
-    if (isset($centreon->optGen['monitoring_dwt_duration_scale']) && $centreon->optGen['monitoring_dwt_duration_scale']) {
-        $defaultScale = $centreon->optGen['monitoring_dwt_duration_scale'];
-    }
     $duration = $defaultDuration;
     if ($defaultScale == 'm') {
         $duration *= 60;
