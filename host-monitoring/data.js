@@ -37,27 +37,27 @@
  */
 function loadPage()
 {
-    jQuery.ajax("./src/index.php?widgetId=" + widgetId + "&page=" + pageNumber, {
-        success: function (htmlData) {
-            jQuery("#hostMonitoringTable").empty().append(htmlData).append(function() {
-                var h = jQuery("#hostMonitoringTable").prop("scrollHeight");
-                parent.iResize(window.name, h);
-            });
-            jQuery('.checkall').on('change', function() {
-                var chck = this.checked;
-                $(this).parents().find(':checkbox').each(function () {
-                    $(this).prop('checked', chck);
-                    clickedCb[$(this).attr('id')] = chck;
-                });
-            });
-        }
-    });
-    if (autoRefresh) {
-        if (timeout) {
-            clearTimeout(timeout);
-        }
-        timeout = setTimeout(loadPage, (autoRefresh * 1000));
+  jQuery.ajax("./src/index.php?widgetId=" + widgetId + "&page=" + pageNumber, {
+    success: function (htmlData) {
+      jQuery("#hostMonitoringTable").empty().append(htmlData).append(function() {
+        var h = jQuery("#hostMonitoringTable").prop("scrollHeight");
+        parent.iResize(window.name, h);
+      });
+      jQuery('.checkall').on('change', function() {
+        var chck = this.checked;
+        $(this).parents().find(':checkbox').each(function () {
+          $(this).prop('checked', chck);
+          clickedCb[$(this).attr('id')] = chck;
+        });
+      });
     }
+  });
+  if (autoRefresh) {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(loadPage, (autoRefresh * 1000));
+  }
 }
 
 /*
@@ -65,10 +65,10 @@ function loadPage()
  */
 function loadToolBar()
 {
-    jQuery("#toolBar").load("./src/toolbar.php",{widgetId: widgetId});
+  jQuery("#toolBar").load("./src/toolbar.php",{widgetId: widgetId});
 }
 
 jQuery(function () {
-    loadToolBar();
-    loadPage();
+  loadToolBar();
+  loadPage();
 });

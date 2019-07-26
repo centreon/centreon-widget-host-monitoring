@@ -33,45 +33,45 @@
  */
 
 jQuery(function () {
-    if (nbRows > itemsPerPage) {
-        $("#pagination").pagination(nbRows, {
-            items_per_page: itemsPerPage,
-            current_page: pageNumber,
-            num_edge_entries : _num_edge_entries,
-            num_display_entries : _num_display_entries,
-            callback	: paginationCallback
-        }).append("<br/>");
+  if (nbRows > itemsPerPage) {
+    $("#pagination").pagination(nbRows, {
+      items_per_page: itemsPerPage,
+      current_page: pageNumber,
+      num_edge_entries : _num_edge_entries,
+      num_display_entries : _num_display_entries,
+      callback  : paginationCallback
+    }).append("<br/>");
+  }
+
+  $(".selection").each(function() {
+    var curId = $(this).attr('id');
+    if (localStorage.getItem('w_hm_' + curId)) {
+      jQuery(this).prop('checked', true);
     }
+  });
 
-    $(".selection").each(function() {
-        var curId = $(this).attr('id');
-        if (localStorage.getItem('w_hm_' + curId)) {
-            jQuery(this).prop('checked', true);
-        }
-    });
-
-    jQuery(".selection").on('click', function() {
-        var curId = jQuery(this).attr('id');
-        var state = jQuery(this).prop('checked');
-        /**
-         key = w_hm_[ID]
-         w = widget
-         hm = host monitoring
-         */
-        if (state == true) {
-            localStorage.setItem('w_hm_' + curId, '1');
-        } else {
-            localStorage.removeItem('w_hm_' + curId);
-        }
-    });
-
-    function paginationCallback(page_index, jq)
-    {
-        if (page_index != pageNumber) {
-            pageNumber = page_index;
-            clickedCb = new Array();
-            loadPage();
-        }
+  jQuery(".selection").on('click', function() {
+    var curId = jQuery(this).attr('id');
+    var state = jQuery(this).prop('checked');
+    /**
+     key = w_hm_[ID]
+     w = widget
+     hm = host monitoring
+     */
+    if (state == true) {
+      localStorage.setItem('w_hm_' + curId, '1');
+    } else {
+      localStorage.removeItem('w_hm_' + curId);
     }
+  });
+
+  function paginationCallback(page_index, jq)
+  {
+    if (page_index != pageNumber) {
+      pageNumber = page_index;
+      clickedCb = new Array();
+      loadPage();
+    }
+  }
 });
 
