@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2005-2011 MERETHIS
+ * Copyright 2005-2019 Centreon
  * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
@@ -79,38 +79,38 @@ $preferences = $widgetObj->getWidgetPreferences($widgetId);
 $stateLabels = getLabels();
 
 $query = 'SELECT SQL_CALC_FOUND_ROWS h.host_id,
-            h.name,
-            h.alias,
-            h.flapping,
-            state,
-            state_type,
-            address,
-            last_hard_state,
-            output,
-            scheduled_downtime_depth,
-            acknowledged,
-            notify,
-            active_checks,
-            passive_checks,
-            last_check,
-            last_state_change,
-            last_hard_state_change,
-            check_attempt,
-            max_check_attempts,
-            action_url,
-            notes_url,
-            cv.value AS criticality,
-            h.icon_image,
-            h.icon_image_alt,
-            cv2.value AS criticality_id,
-            cv.name IS NULL as isnull ';
-$query .= 'FROM hosts h ';
-$query .= ' LEFT JOIN `customvariables` cv ';
-$query .= ' ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\') ';
-$query .= ' LEFT JOIN `customvariables` cv2 ';
-$query .= ' ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\') ';
-$query .= ' WHERE enabled = 1 ';
-$query .= ' AND h.name NOT LIKE \'_Module_%\' ';
+        h.name,
+        h.alias,
+        h.flapping,
+        state,
+        state_type,
+        address,
+        last_hard_state,
+        output,
+        scheduled_downtime_depth,
+        acknowledged,
+        notify,
+        active_checks,
+        passive_checks,
+        last_check,
+        last_state_change,
+        last_hard_state_change,
+        check_attempt,
+        max_check_attempts,
+        action_url,
+        notes_url,
+        cv.value AS criticality,
+        h.icon_image,
+        h.icon_image_alt,
+        cv2.value AS criticality_id,
+        cv.name IS NULL as isnull 
+    FROM hosts h
+    LEFT JOIN `customvariables` cv
+    ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\')
+    LEFT JOIN `customvariables` cv2
+    ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\')
+    WHERE enabled = 1
+    AND h.name NOT LIKE \'_Module_%\' ';
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
     $tab = explode(' ', $preferences['host_name_search']);
@@ -157,9 +157,9 @@ if (isset($preferences['notification_filter']) && $preferences['notification_fil
 
 if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
     if ($preferences['downtime_filter'] == 'downtime') {
-        $query = CentreonUtils::conditionBuilder($query, ' scheduled_downtime_depth	> 0 ');
+        $query = CentreonUtils::conditionBuilder($query, ' scheduled_downtime_depth    > 0 ');
     } elseif ($preferences['downtime_filter'] == 'ndowntime') {
-        $query = CentreonUtils::conditionBuilder($query, ' scheduled_downtime_depth	= 0 ');
+        $query = CentreonUtils::conditionBuilder($query, ' scheduled_downtime_depth    = 0 ');
     }
 }
 
@@ -176,40 +176,43 @@ if (isset($preferences['state_type_filter']) && $preferences['state_type_filter'
 }
 
 if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
-    $mainQueryParameters[] = ['parameter' => ':host_group_id', 'value' => $preferences['hostgroup'], 'type' => PDO::PARAM_INT];
+    $mainQueryParameters[] = [
+        'parameter' => ':host_group_id',
+        'value' => $preferences['hostgroup'],
+        'type' => PDO::PARAM_INT
+    ];
     $hostGroupCondition = ' h.host_id IN
-                            (SELECT host_host_id
-                            FROM ' . $conf_centreon['db'] . '.hostgroup_relation
-                            WHERE hostgroup_hg_id = :host_group_id) ';
+        (SELECT host_host_id
+        FROM ' . $conf_centreon['db'] . '.hostgroup_relation
+        WHERE hostgroup_hg_id = :host_group_id) ';
     $query = CentreonUtils::conditionBuilder($query, $hostGroupCondition);
 }
-if (
-    isset($preferences['display_severities']) && $preferences['display_severities'] &&
-    isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != ''
+if (isset($preferences['display_severities'])
+    && $preferences['display_severities']
+    && isset($preferences['criticality_filter'])
+    && $preferences['criticality_filter'] != ''
 ) {
-  $tab = explode(',', $preferences['criticality_filter']);
-  $labels = '';
+    $tab = explode(',', $preferences['criticality_filter']);
+    $labels = '';
 
-  foreach ($tab as $p) {
-    if ($labels != '') {
-      $labels .= ',';
+    foreach ($tab as $p) {
+        if ($labels != '') {
+            $labels .= ',';
+        }
+        $labels .= '\''.trim($p).'\'';
     }
 
-    $labels .= '\''.trim($p).'\'';
-  }
+    $res = $db->query("SELECT hc_id FROM hostcategories WHERE hc_name IN (" . $labels . ")");
+    $idC = '';
 
-  $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN ({$labels})";
-  $RES = $db->query($query2);
-  $idC = '';
-
-  while ($d1 = $RES->fetch()) {
-    if ($idC != '') {
-      $idC .= ',';
+    while ($d1 = $res->fetch()) {
+        if ($idC != '') {
+            $idC .= ',';
+        }
+        $idC .= $d1['hc_id'];
     }
-    $idC .= $d1['hc_id'];
-  }
 
-  $query .= " AND cv2.`value` IN ({$idC}) ";
+    $query .= " AND cv2.`value` IN (" . $idC . ") ";
 }
 if (!$centreon->user->admin) {
     $pearDB = $db;
@@ -220,7 +223,7 @@ $orderBy = 'h.name ASC';
 if (isset($preferences['order_by']) && $preferences['order_by'] != '') {
     $orderBy = $preferences['order_by'];
 }
-$query .= " ORDER BY {$orderBy}";
+$query .= " ORDER BY " . $orderBy;
 
 $res = $dbb->prepare($query);
 

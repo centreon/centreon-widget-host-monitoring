@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright 2005-2011 MERETHIS
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+ * Copyright 2005-2019 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -97,12 +97,12 @@ var sid = '<?php echo session_id();?>';
 jQuery( function() {
     jQuery(".toolbar").change( function() {
 
-	    if (jQuery(this).val() != 0) {
-    		var checkValues = jQuery("input:checked")
+        if (jQuery(this).val() != 0) {
+            var checkValues = jQuery("input:checked")
                 .map( function() {
                     var tmp = jQuery(this).attr('id').split("_");
                     return tmp[1];
-    		    })
+                })
                 .get().join(",");
 
             if (checkValues != '') {

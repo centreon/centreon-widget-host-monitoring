@@ -1,7 +1,7 @@
 <?php
 /**
- * Copyright 2005-2011 MERETHIS
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+ * Copyright 2005-2019 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -73,6 +73,4 @@ if ($preferences['more_views']) {
     $bMoreViews = $preferences['more_views'];
 }
 $template->assign('more_views', $bMoreViews);
-
 $template->display('index.ihtml');
-

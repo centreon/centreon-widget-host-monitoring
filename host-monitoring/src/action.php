@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2005-2018 Centreon
+ * Copyright 2005-2019 Centreon
  * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
@@ -141,10 +141,8 @@ try {
 
             $template->display('acknowledge.ihtml');
         } elseif ($cmd == 75) {
-
             $hourStart = $centreon->CentreonGMT->getDate("H", time(), $gmt);
             $minuteStart = $centreon->CentreonGMT->getDate("i", time(), $gmt);
-
             $hourEnd = $centreon->CentreonGMT->getDate("H", time() + $duration, $gmt);
             $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + $duration, $gmt);
             
@@ -155,13 +153,13 @@ try {
             $template->assign('defaultSecondDuration', $defaultScale == 's' ? $defaultDuration : '0');
             $template->assign('defaultHourDuration', $defaultScale == 'h' ? $defaultDuration : '0');
             $template->assign('defaultMinuteDuration', $defaultScale == 'm' ? $defaultDuration : '0');
-            $template->assign('defaultDayDuration',  $defaultScale == 'd' ? $defaultDuration : '0');
+            $template->assign('defaultDayDuration', $defaultScale == 'd' ? $defaultDuration : '0');
             $template->assign('duration', $duration); // In seconds
             $template->assign('secondsLabel', _("seconds"));
             $template->assign('daysLabel', _("days"));
             $template->assign('hoursLabel', _("hours"));
             $template->assign('minutesLabel', _("minutes"));
-            $template->assign('defaultHourStart',$hourStart);
+            $template->assign('defaultHourStart', $hourStart);
             $template->assign('defaultMinuteStart', $minuteStart);
             $template->assign('defaultHourEnd', $hourEnd);
             $template->assign('defaultMinuteEnd', $minuteEnd);
@@ -184,29 +182,29 @@ try {
     } else {
         $command = "";
         switch ($cmd) {
-                /* remove ack */
-                case 73 :
-                    $command = "REMOVE_HOST_ACKNOWLEDGEMENT;%s";
-                    break;
-                /* enable notif */
-                case 82 :
-                    $command = "ENABLE_HOST_NOTIFICATIONS;%s";
-                    break;
-                /* disable notif */
-                case 83 :
-                    $command = "DISABLE_HOST_NOTIFICATIONS;%s";
-                    break;
-                /* enable check */
-                case 92 :
-                    $command = "ENABLE_HOST_CHECK;%s";
-                    break;
-                /* disable check */
-                case 93 :
-                    $command = "DISABLE_HOST_CHECK;%s";
-                    break;
-                default :
-                    throw new Exception('Unknown command');
-                    break;
+            /* remove ack */
+            case 73:
+                $command = "REMOVE_HOST_ACKNOWLEDGEMENT;%s";
+                break;
+            /* enable notif */
+            case 82:
+                $command = "ENABLE_HOST_NOTIFICATIONS;%s";
+                break;
+            /* disable notif */
+            case 83:
+                $command = "DISABLE_HOST_NOTIFICATIONS;%s";
+                break;
+            /* enable check */
+            case 92:
+                $command = "ENABLE_HOST_CHECK;%s";
+                break;
+            /* disable check */
+            case 93:
+                $command = "DISABLE_HOST_CHECK;%s";
+                break;
+            default:
+                throw new Exception('Unknown command');
+                break;
         }
         if ($command != "") {
             $externalCommandMethod = 'set_process_command';
@@ -215,8 +213,11 @@ try {
             }
             foreach ($hosts as $hostId) {
                 if ($hostId != 0) {
-                    $externalCmd->$externalCommandMethod(sprintf(
-                        $command, $hostObj->getHostName($hostId)),
+                    $externalCmd->$externalCommandMethod(
+                        sprintf(
+                            $command,
+                            $hostObj->getHostName($hostId)
+                        ),
                         $hostObj->getHostPollerId($hostId)
                     );
                 }
@@ -236,23 +237,23 @@ var result = <?php echo $result;?>;
 var successMsg = "<?php echo $successMsg;?>";
 
 jQuery(function() {
-	if (result) {
-		jQuery("#result").html(successMsg);
-		setTimeout('closeBox()', 2000);
-	}
-	jQuery("#submit").click(function() {
-			sendCmd();
-	});
-	//$("#ListTable").styleTable();
-	jQuery("#submit").button();
-	toggleDurationField();
-	jQuery("[name=fixed]").click(function() {
-		toggleDurationField();
-	});
+    if (result) {
+        jQuery("#result").html(successMsg);
+        setTimeout('closeBox()', 2000);
+    }
+    jQuery("#submit").click(function() {
+        sendCmd();
+    });
+    //$("#ListTable").styleTable();
+    jQuery("#submit").button();
+    toggleDurationField();
+    jQuery("[name=fixed]").click(function() {
+        toggleDurationField();
+    });
 
-	//initializing datepicker and timepicker
-	initDatepicker("datepicker", "yy/mm/dd", "0");
-	jQuery("#start_time, #end_time").timepicker();
+    //initializing datepicker and timepicker
+    initDatepicker("datepicker", "yy/mm/dd", "0");
+    jQuery("#start_time, #end_time").timepicker();
 
     turnOnEvents();
 
@@ -260,42 +261,42 @@ jQuery(function() {
 
 function closeBox()
 {
-	jQuery('#WidgetDowntime').centreonPopin('close');
+    jQuery('#WidgetDowntime').centreonPopin('close');
 }
 
 function sendCmd()
 {
-	fieldResult = true;
-	if (jQuery("#comment") && !jQuery("#comment").val()) {
-		fieldResult = false;
-	}
-	if (fieldResult == false) {
-		jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
-		return false;
-	}
-	jQuery.ajax({
-				type	:	"POST",
-				url	: "./widgets/host-monitoring/src/sendCmd.php",
-				data	: 	jQuery("#Form").serialize(),
-				success	:	function() {
-								jQuery("#result").html(successMsg);
-								setTimeout('closeBox()', 2000);
-							}
-		   });
+    fieldResult = true;
+    if (jQuery("#comment") && !jQuery("#comment").val()) {
+        fieldResult = false;
+    }
+    if (fieldResult == false) {
+        jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
+        return false;
+    }
+    jQuery.ajax({
+        type: "POST",
+        url:  "./widgets/host-monitoring/src/sendCmd.php",
+        data: jQuery("#Form").serialize(),
+        success: function() {
+            jQuery("#result").html(successMsg);
+            setTimeout('closeBox()', 2000);
+        }
+    });
 }
 
 function toggleDurationField()
 {
-	if (jQuery("[name=fixed]").is(':checked')) {
+    if (jQuery("[name=fixed]").is(':checked')) {
         jQuery("[name=secondduration]").attr('disabled', true);
         jQuery("[name=dayduration]").attr('disabled', true);
-		jQuery("[name=hourduration]").attr('disabled', true);
-		jQuery("[name=minuteduration]").attr('disabled', true);
-	} else {
-		jQuery("[name=dayduration]").removeAttr('disabled');
-		jQuery("[name=hourduration]").removeAttr('disabled');
-		jQuery("[name=minuteduration]").removeAttr('disabled');
+        jQuery("[name=hourduration]").attr('disabled', true);
+        jQuery("[name=minuteduration]").attr('disabled', true);
+    } else {
+        jQuery("[name=dayduration]").removeAttr('disabled');
+        jQuery("[name=hourduration]").removeAttr('disabled');
+        jQuery("[name=minuteduration]").removeAttr('disabled');
         jQuery("[name=secondduration]").removeAttr('disabled');
-	}
+    }
 }
 </script>

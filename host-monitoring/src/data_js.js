@@ -1,6 +1,6 @@
 /**
- * Copyright 2005-2011 MERETHIS
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+ * Copyright 2005-2019 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -33,45 +33,45 @@
  */
 
 jQuery(function () {
-    if (nbRows > itemsPerPage) {
-        $("#pagination").pagination(nbRows, {
-            items_per_page: itemsPerPage,
-            current_page: pageNumber,
-            num_edge_entries : _num_edge_entries,
-            num_display_entries : _num_display_entries,
-            callback	: paginationCallback
-        }).append("<br/>");
-    }
-    
-    $(".selection").each(function() {
-        var curId = $(this).attr('id');
-        if (localStorage.getItem('w_hm_' + curId)) {
-            jQuery(this).prop('checked', true);
-        }
-    });
+  if (nbRows > itemsPerPage) {
+    $("#pagination").pagination(nbRows, {
+      items_per_page: itemsPerPage,
+      current_page: pageNumber,
+      num_edge_entries : _num_edge_entries,
+      num_display_entries : _num_display_entries,
+      callback  : paginationCallback
+    }).append("<br/>");
+  }
 
-    jQuery(".selection").on('click', function() {
-        var curId = jQuery(this).attr('id');
-        var state = jQuery(this).prop('checked');
-        /**
-         key = w_hm_[ID]
-         w = widget
-         hm = host monitoring
-         */
-        if (state == true) {
-            localStorage.setItem('w_hm_' + curId, '1');
-        } else {
-            localStorage.removeItem('w_hm_' + curId);
-        }
-    });
-
-    function paginationCallback(page_index, jq)
-    {
-        if (page_index != pageNumber) {
-            pageNumber = page_index;
-            clickedCb = new Array();
-            loadPage();
-        }
+  $(".selection").each(function() {
+    var curId = $(this).attr('id');
+    if (localStorage.getItem('w_hm_' + curId)) {
+      jQuery(this).prop('checked', true);
     }
+  });
+
+  jQuery(".selection").on('click', function() {
+    var curId = jQuery(this).attr('id');
+    var state = jQuery(this).prop('checked');
+    /**
+     key = w_hm_[ID]
+     w = widget
+     hm = host monitoring
+     */
+    if (state == true) {
+      localStorage.setItem('w_hm_' + curId, '1');
+    } else {
+      localStorage.removeItem('w_hm_' + curId);
+    }
+  });
+
+  function paginationCallback(page_index, jq)
+  {
+    if (page_index != pageNumber) {
+      pageNumber = page_index;
+      clickedCb = new Array();
+      loadPage();
+    }
+  }
 });
 
