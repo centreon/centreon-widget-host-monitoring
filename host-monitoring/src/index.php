@@ -74,7 +74,6 @@ $centreonWebPath = trim($centreon->optGen['oreon_web_path'], '/');
 $widgetId = $_REQUEST['widgetId'];
 $page = $_REQUEST['page'];
 $mainQueryParameters = [];
-
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
 
