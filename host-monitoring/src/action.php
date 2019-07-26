@@ -143,7 +143,6 @@ try {
         } elseif ($cmd == 75) {
             $hourStart = $centreon->CentreonGMT->getDate("H", time(), $gmt);
             $minuteStart = $centreon->CentreonGMT->getDate("i", time(), $gmt);
-
             $hourEnd = $centreon->CentreonGMT->getDate("H", time() + $duration, $gmt);
             $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + $duration, $gmt);
             
