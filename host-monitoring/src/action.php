@@ -238,66 +238,66 @@ var result = <?php echo $result;?>;
 var successMsg = "<?php echo $successMsg;?>";
 
 jQuery(function() {
-  if (result) {
-    jQuery("#result").html(successMsg);
-    setTimeout('closeBox()', 2000);
-  }
-  jQuery("#submit").click(function() {
-    sendCmd();
-  });
-  //$("#ListTable").styleTable();
-  jQuery("#submit").button();
-  toggleDurationField();
-  jQuery("[name=fixed]").click(function() {
+    if (result) {
+        jQuery("#result").html(successMsg);
+        setTimeout('closeBox()', 2000);
+    }
+    jQuery("#submit").click(function() {
+        sendCmd();
+    });
+    //$("#ListTable").styleTable();
+    jQuery("#submit").button();
     toggleDurationField();
-  });
+    jQuery("[name=fixed]").click(function() {
+        toggleDurationField();
+    });
 
-  //initializing datepicker and timepicker
-  initDatepicker("datepicker", "yy/mm/dd", "0");
-  jQuery("#start_time, #end_time").timepicker();
+    //initializing datepicker and timepicker
+    initDatepicker("datepicker", "yy/mm/dd", "0");
+    jQuery("#start_time, #end_time").timepicker();
 
-  turnOnEvents();
+    turnOnEvents();
 
 });
 
 function closeBox()
 {
-  jQuery('#WidgetDowntime').centreonPopin('close');
+    jQuery('#WidgetDowntime').centreonPopin('close');
 }
 
 function sendCmd()
 {
-  fieldResult = true;
-  if (jQuery("#comment") && !jQuery("#comment").val()) {
-    fieldResult = false;
-  }
-  if (fieldResult == false) {
-    jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
-    return false;
-  }
-  jQuery.ajax({
-    type: "POST",
-    url:  "./widgets/host-monitoring/src/sendCmd.php",
-    data: jQuery("#Form").serialize(),
-    success: function() {
-        jQuery("#result").html(successMsg);
-        setTimeout('closeBox()', 2000);
+    fieldResult = true;
+    if (jQuery("#comment") && !jQuery("#comment").val()) {
+        fieldResult = false;
     }
-  });
+    if (fieldResult == false) {
+        jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
+        return false;
+    }
+    jQuery.ajax({
+        type: "POST",
+        url:  "./widgets/host-monitoring/src/sendCmd.php",
+        data: jQuery("#Form").serialize(),
+        success: function() {
+            jQuery("#result").html(successMsg);
+            setTimeout('closeBox()', 2000);
+        }
+    });
 }
 
 function toggleDurationField()
 {
-  if (jQuery("[name=fixed]").is(':checked')) {
-    jQuery("[name=secondduration]").attr('disabled', true);
-    jQuery("[name=dayduration]").attr('disabled', true);
-    jQuery("[name=hourduration]").attr('disabled', true);
-    jQuery("[name=minuteduration]").attr('disabled', true);
-  } else {
-    jQuery("[name=dayduration]").removeAttr('disabled');
-    jQuery("[name=hourduration]").removeAttr('disabled');
-    jQuery("[name=minuteduration]").removeAttr('disabled');
-    jQuery("[name=secondduration]").removeAttr('disabled');
-  }
+    if (jQuery("[name=fixed]").is(':checked')) {
+        jQuery("[name=secondduration]").attr('disabled', true);
+        jQuery("[name=dayduration]").attr('disabled', true);
+        jQuery("[name=hourduration]").attr('disabled', true);
+        jQuery("[name=minuteduration]").attr('disabled', true);
+    } else {
+        jQuery("[name=dayduration]").removeAttr('disabled');
+        jQuery("[name=hourduration]").removeAttr('disabled');
+        jQuery("[name=minuteduration]").removeAttr('disabled');
+        jQuery("[name=secondduration]").removeAttr('disabled');
+    }
 }
 </script>
