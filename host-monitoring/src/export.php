@@ -197,33 +197,23 @@ h.host_id IN (
 SQL;
     $query = CentreonUtils::conditionBuilder($query, $hostgroupHgIdCondition);
 }
-if (
-    isset($preferences['display_severities']) && $preferences['display_severities'] &&
-    isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != ''
-) {
-  $tab = explode(',', $preferences['criticality_filter']);
-  $labels = '';
-
-  foreach ($tab as $p) {
-    if ($labels != '') {
-      $labels .= ',';
+if (isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != '') {
+    $tab = explode(',', $preferences['criticality_filter']);
+    $labels = '';
+    foreach ($tab as $p) {
+        if ($labels != '') {
+            $labels .= ',';
+        }
+        $labels .= '\'' . trim($p) . '\'';
     }
-
-    $labels .= '\''.trim($p).'\'';
-  }
-
-  $query2 = "SELECT hc_id FROM hostcategories WHERE hc_name IN ({$labels})";
-  $RES = $db->query($query2);
-  $idC = '';
-
-  while ($d1 = $RES->fetch()) {
-    if ($idC != '') {
-      $idC .= ',';
-    }
-    $idC .= $d1['hc_id'];
-  }
-
-  $query .= " AND cv2.`value` IN ({$idC}) ";
+    $query = CentreonUtils::conditionBuilder(
+        $query,
+        " h.host_id IN (
+            SELECT DISTINCT host_host_id 
+            FROM " . $conf_centreon['db'] . ".hostcategories_relation
+            WHERE hostcategories_hc_id IN (" . $labels . ") 
+        )"
+    );
 }
 if (!$centreon->user->admin) {
     $pearDB = $db;
