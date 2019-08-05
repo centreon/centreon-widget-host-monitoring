@@ -212,7 +212,7 @@ if (!empty($preferences['criticality_filter'])) {
         if ($labels != '') {
             $labels .= ',';
         }
-        $labels .= '\'' . trim($p) . '\'';
+        $labels .= ":id_". $p;
         $mainQueryParameters[] = [
             'parameter' => ':id_' . $p,
             'value' => (int)$p,
