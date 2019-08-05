@@ -205,15 +205,19 @@ if (!empty($preferences['criticality_filter'])) {
             $labels .= ',';
         }
         $labels .= '\'' . trim($p) . '\'';
+        $mainQueryParameters[] = [
+            'parameter' => ':id_' . $p,
+            'value' => (int)$p,
+            'type' => PDO::PARAM_INT
+        ];
     }
-    $query = CentreonUtils::conditionBuilder(
-        $query,
-        " h.host_id IN (
-            SELECT DISTINCT host_host_id 
-            FROM " . $conf_centreon['db'] . ".hostcategories_relation
-            WHERE hostcategories_hc_id IN (" . $labels . ") 
-        )"
-    );
+    $SeverityIdCondition = <<<SQL
+h.host_id IN (
+    SELECT DISTINCT host_host_id 
+    FROM {$conf_centreon['db']}.hostcategories_relation
+    WHERE hostcategories_hc_id IN ({$labels}))
+SQL;
+    $query = CentreonUtils::conditionBuilder($query, $SeverityIdCondition);
 }
 if (!$centreon->user->admin) {
     $pearDB = $db;
