@@ -197,7 +197,7 @@ h.host_id IN (
 SQL;
     $query = CentreonUtils::conditionBuilder($query, $hostgroupHgIdCondition);
 }
-if (isset($preferences['criticality_filter']) && $preferences['criticality_filter'] != '') {
+if (!empty($preferences['criticality_filter'])) {
     $tab = explode(',', $preferences['criticality_filter']);
     $labels = '';
     foreach ($tab as $p) {
