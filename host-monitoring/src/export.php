@@ -197,7 +197,7 @@ h.host_id IN (
 SQL;
     $query = CentreonUtils::conditionBuilder($query, $hostgroupHgIdCondition);
 }
-if (!empty($preferences['criticality_filter'])) {
+if (!empty($preferences['display_severities']) && !empty($preferences['criticality_filter'])) {
     $tab = explode(',', $preferences['criticality_filter']);
     $labels = '';
     foreach ($tab as $p) {
@@ -211,12 +211,11 @@ if (!empty($preferences['criticality_filter'])) {
             'type' => PDO::PARAM_INT
         ];
     }
-    $SeverityIdCondition = <<<SQL
-h.host_id IN (
-    SELECT DISTINCT host_host_id 
-    FROM {$conf_centreon['db']}.hostcategories_relation
-    WHERE hostcategories_hc_id IN ({$labels}))
-SQL;
+    $SeverityIdCondition =
+        "h.host_id IN (
+            SELECT DISTINCT host_host_id
+            FROM {$conf_centreon['db']}.hostcategories_relation
+            WHERE hostcategories_hc_id IN ({$labels}))";
     $query = CentreonUtils::conditionBuilder($query, $SeverityIdCondition);
 }
 if (!$centreon->user->admin) {
