@@ -239,7 +239,8 @@ if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
 }
 
 $query .= " ORDER BY {$orderBy}";
-$query .= ' LIMIT ' . ($page * $preferences['entries']) . ',' . $preferences['entries'];
+$num = filter_var($preferences['entries'], FILTER_VALIDATE_INT) ?: 10;
+$query .= ' LIMIT ' . ($page * $num) . ',' . $num;
 $res = $dbb->prepare($query);
 
 foreach ($mainQueryParameters as $parameter) {
