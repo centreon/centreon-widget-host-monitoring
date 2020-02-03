@@ -69,7 +69,7 @@ $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, './', $centreon_path);
 
 $centreon = $_SESSION['centreon'];
-$widgetId = $_REQUEST['widgetId'];
+$widgetId = filter_input(INPUT_REQUEST, 'widgetId', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
 $mainQueryParameters = [];
 
 $widgetObj = new CentreonWidget($centreon, $db);
@@ -78,39 +78,40 @@ $preferences = $widgetObj->getWidgetPreferences($widgetId);
 // Get status labels
 $stateLabels = getLabels();
 
-$query = 'SELECT SQL_CALC_FOUND_ROWS h.host_id,
-            h.name,
-            h.alias,
-            h.flapping,
-            state,
-            state_type,
-            address,
-            last_hard_state,
-            output,
-            scheduled_downtime_depth,
-            acknowledged,
-            notify,
-            active_checks,
-            passive_checks,
-            last_check,
-            last_state_change,
-            last_hard_state_change,
-            check_attempt,
-            max_check_attempts,
-            action_url,
-            notes_url,
-            cv.value AS criticality,
-            h.icon_image,
-            h.icon_image_alt,
-            cv2.value AS criticality_id,
-            cv.name IS NULL as isnull ';
-$query .= 'FROM hosts h ';
-$query .= ' LEFT JOIN `customvariables` cv ';
-$query .= ' ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\') ';
-$query .= ' LEFT JOIN `customvariables` cv2 ';
-$query .= ' ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\') ';
-$query .= ' WHERE enabled = 1 ';
-$query .= ' AND h.name NOT LIKE \'_Module_%\' ';
+$query = 'SELECT SQL_CALC_FOUND_ROWS
+    h.host_id,
+    h.name,
+    h.alias,
+    h.flapping,
+    state,
+    state_type,
+    address,
+    last_hard_state,
+    output,
+    scheduled_downtime_depth,
+    acknowledged,
+    notify,
+    active_checks,
+    passive_checks,
+    last_check,
+    last_state_change,
+    last_hard_state_change,
+    check_attempt,
+    max_check_attempts,
+    action_url,
+    notes_url,
+    cv.value AS criticality,
+    h.icon_image,
+    h.icon_image_alt,
+    cv2.value AS criticality_id,
+    cv.name IS NULL as isnull
+    FROM hosts h
+    LEFT JOIN `customvariables` cv
+        ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = \'CRITICALITY_LEVEL\')
+    LEFT JOIN `customvariables` cv2
+        ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\')
+    WHERE enabled = 1
+    AND h.name NOT LIKE \'_Module_%\' ';
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
     $tab = explode(' ', $preferences['host_name_search']);
@@ -240,8 +241,8 @@ unset($parameter, $mainQueryParameters);
 $res->execute();
 $nbRows = $res->rowCount();
 $data = [];
-$outputLength = $preferences['output_length'] ? $preferences['output_length'] : 50;
-$commentLength = $preferences['comment_length'] ? $preferences['comment_length'] : 50;
+$outputLength = $preferences['output_length'] ?: 50;
+$commentLength = $preferences['comment_length'] ?: 50;
 $hostObj = new CentreonHost($db);
 $gmt = new CentreonGMT($db);
 $gmt->getMyGMTFromSession(session_id(), $db);
@@ -273,10 +274,12 @@ while ($row = $res->fetch()) {
     }
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
-        $res2 = $dbb->query(
-            'SELECT data FROM comments where host_id = ' . $row['host_id'] .
-            ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1'
+        $res2 = $dbb->prepare(
+            'SELECT data FROM comments where host_id = :hostId
+            AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1'
         );
+        $res2->bindValue(':hostId', $row['host_id'], \PDO::PARAM_INT);
+        $res2->execute();
         if ($row2 = $res2->fetch()) {
             $data[$row['host_id']]['comment'] = substr($row2['data'], 0, $commentLength);
         } else {

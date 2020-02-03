@@ -58,10 +58,16 @@ try {
     }
     $centreon = $_SESSION['centreon'];
     $oreon = $centreon;
-    $cmd = $_REQUEST['cmd'];
-    $hosts = explode(",", $_REQUEST['selection']);
-    $externalCmd = new CentreonExternalCommand($centreon);
+    $cmd = filter_input(INPUT_GET, 'cmd', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
 
+    $selection = '';
+    $hosts = explode(",", $_GET['selection']);
+    foreach($hosts as $host) {
+        $selection .= (filter_var($host, FILTER_VALIDATE_INT) ?: 0) . ',';
+    }
+    $selection = rtrim($selection, ',');
+
+    $externalCmd = new CentreonExternalCommand($centreon);
     $hostObj = new CentreonHost($db);
     $successMsg = _("External Command successfully submitted... Exiting window...");
     $result = 0;
@@ -96,7 +102,7 @@ try {
         $template->assign('durationLabel', _("Duration"));
         $template->assign('startLabel', _("Start"));
         $template->assign('endLabel', _("End"));
-        $template->assign('hosts', $_REQUEST['selection']);
+        $template->assign('hosts', $selection);
         $template->assign('author', $centreon->user->name);
         if ($cmd == 72) {
             $template->assign('ackHostSvcLabel', _("Acknowledge services of hosts"));
@@ -214,7 +220,8 @@ try {
                 $externalCommandMethod = 'setProcessCommand';
             }
             foreach ($hosts as $hostId) {
-                if ($hostId != 0) {
+                $hostId = filter_var($hostId, FILTER_VALIDATE_INT) ?: 0;
+                if ($hostId !== 0) {
                     $externalCmd->$externalCommandMethod(sprintf(
                         $command, $hostObj->getHostName($hostId)),
                         $hostObj->getHostPollerId($hostId)

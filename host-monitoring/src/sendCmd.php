@@ -57,19 +57,18 @@ try {
     if (CentreonSession::checkSession(session_id(), $db) == 0) {
         throw new Exception('Invalid session');
     }
-    $type = $_POST['cmdType'];
     $centreon = $_SESSION['centreon'];
-    $hosts = explode(',', $_POST['hosts']);
     $oreon = $centreon;
+
+    $type = filter_input(INPUT_POST, 'cmdType', FILTER_SANITIZE_STRING, ['options' => ['default' => '']]);
+    //@TODO choose what to do with harmful names and comments
+    $author = filter_input(INPUT_POST, 'author', FILTER_SANITIZE_STRING, ['options' => ['default' => '']]);
+    $comment = filter_input(INPUT_POST, 'comment', FILTER_SANITIZE_STRING, ['options' => ['default' => '']]) ?? '';
+
     $externalCmd = new CentreonExternalCommand($centreon);
     $hostObj = new CentreonHost($db);
     $svcObj = new CentreonService($db);
     $command = "";
-    $author = $_POST['author'];
-    $comment = "";
-    if (isset($_POST['comment'])) {
-        $comment = $_POST['comment'];
-    }
     if ($type == 'ack') {
         $persistent = 0;
         $sticky = 0;
@@ -126,8 +125,10 @@ try {
         if (method_exists($externalCmd, 'setProcessCommand')) {
             $externalCommandMethod = 'setProcessCommand';
         }
+        $hosts = explode(',', $_POST['hosts']);
         foreach ($hosts as $hostId) {
-            if ($hostId != 0) {
+            $hostId = filter_var($hostId, FILTER_VALIDATE_INT) ?: 0;
+            if ($hostId !== 0) {
                 $hostname = $hostObj->getHostName($hostId);
                 $pollerId = $hostObj->getHostPollerId($hostId);
                 $externalCmd->$externalCommandMethod(sprintf($command, $hostname), $pollerId);
