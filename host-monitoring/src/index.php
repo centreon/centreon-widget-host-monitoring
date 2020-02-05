@@ -389,7 +389,9 @@ $aColorHost = [
     4 => 'host_pending'
 ];
 
-$autoRefresh = filter_var($preferences['refresh_interval'], FILTER_VALIDATE_INT) ?: 30;
+$autoRefresh = (isset($preferences['refresh_interval']) && (int)$preferences['refresh_interval'] > 0)
+    ? (int)$preferences['refresh_interval']
+    : 30;
 $template->assign('widgetId', $widgetId);
 $template->assign('autoRefresh', $autoRefresh);
 $template->assign('preferences', $preferences);
