@@ -1,7 +1,7 @@
 <?php
-/**
- * Copyright 2005-2011 MERETHIS
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+/*
+ * Copyright 2005-2020 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -19,11 +19,11 @@
  * combined work based on this program. Thus, the terms and conditions of the GNU
  * General Public License cover the whole combination.
  *
- * As a special exception, the copyright holders of this program give MERETHIS
+ * As a special exception, the copyright holders of this program give CENTREON
  * permission to link this program with independent modules to produce an executable,
  * regardless of the license terms of these independent modules, and to copy and
- * distribute the resulting executable under terms of MERETHIS choice, provided that
- * MERETHIS also meet, for each linked independent module, the terms  and conditions
+ * distribute the resulting executable under terms of CENTREON choice, provided that
+ * CENTREON also meet, for each linked independent module, the terms  and conditions
  * of the license of that module. An independent module is a module which is not
  * derived from this program. If you modify this program, you may extend this
  * exception to your version of the program, but you are not obliged to do so. If you
@@ -38,7 +38,6 @@ header('Content-Disposition: attachment; filename="hosts-monitoring.csv"');
 
 require_once "../../require.php";
 require_once "./DB-Func.php";
-
 require_once $centreon_path . 'www/class/centreon.class.php';
 require_once $centreon_path . 'www/class/centreonSession.class.php';
 require_once $centreon_path . 'www/class/centreonDB.class.php';
@@ -47,10 +46,8 @@ require_once $centreon_path . 'www/class/centreonDuration.class.php';
 require_once $centreon_path . 'www/class/centreonUtils.class.php';
 require_once $centreon_path . 'www/class/centreonACL.class.php';
 require_once $centreon_path . 'www/class/centreonHost.class.php';
-
 require_once $centreon_path . 'www/class/centreonMedia.class.php';
 require_once $centreon_path . 'www/class/centreonCriticality.class.php';
-
 require_once $centreon_path . "GPL_LIB/Smarty/libs/Smarty.class.php";
 
 session_start();
@@ -72,7 +69,7 @@ $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
 
 $centreon = $_SESSION['centreon'];
-$widgetId = $_REQUEST['widgetId'];
+$widgetId = (int)$_REQUEST['widgetId'];
 
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
@@ -81,38 +78,38 @@ $preferences = $widgetObj->getWidgetPreferences($widgetId);
 $stateLabels = getLabels();
 
 $query = "SELECT SQL_CALC_FOUND_ROWS h.host_id,
-                 h.name,
-                 h.alias,
-                 h.flapping,
-                 state,
-                 state_type,
-                 address,
-                 last_hard_state,
-                 output,
-                 scheduled_downtime_depth,
-                 acknowledged,
-                 notify,
-                 active_checks,
-                 passive_checks,
-                 last_check,
-                 last_state_change,
-                 last_hard_state_change,
-                 check_attempt,
-                 max_check_attempts,
-                 action_url,
-                 notes_url,
-                 cv.value AS criticality,
-                 h.icon_image,
-                 h.icon_image_alt,
-                 cv2.value AS criticality_id,
-                 cv.name IS NULL as isnull ";
-$query .= "FROM hosts h ";
-$query .= " LEFT JOIN `customvariables` cv ";
-$query .= " ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = 'CRITICALITY_LEVEL') ";
-$query .= " LEFT JOIN `customvariables` cv2 ";
-$query .= " ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = 'CRITICALITY_ID') ";
-$query .= " WHERE enabled = 1 ";
-$query .= " AND h.name NOT LIKE '_Module_%' ";
+     h.name,
+     h.alias,
+     h.flapping,
+     state,
+     state_type,
+     address,
+     last_hard_state,
+     output,
+     scheduled_downtime_depth,
+     acknowledged,
+     notify,
+     active_checks,
+     passive_checks,
+     last_check,
+     last_state_change,
+     last_hard_state_change,
+     check_attempt,
+     max_check_attempts,
+     action_url,
+     notes_url,
+     cv.value AS criticality,
+     h.icon_image,
+     h.icon_image_alt,
+     cv2.value AS criticality_id,
+     cv.name IS NULL as isnull
+     FROM hosts h
+     LEFT JOIN `customvariables` cv
+        ON (cv.host_id = h.host_id AND cv.service_id IS NULL AND cv.name = 'CRITICALITY_LEVEL')
+    LEFT JOIN `customvariables` cv2
+        ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = 'CRITICALITY_ID')
+    WHERE enabled = 1
+    AND h.name NOT LIKE '_Module_%' ";
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
     $tab = explode(" ", $preferences['host_name_search']);
@@ -251,7 +248,7 @@ while ($row = $res->fetchRow()) {
     }
 
     if (isset($preferences['display_last_comment']) && $preferences['display_last_comment']) {
-        $query = 'SELECT data FROM comments where host_id = ' . $row['host_id'] .
+        $query = 'SELECT data FROM comments where host_id = ' . (int)$row['host_id'] .
             ' AND service_id IS NULL ORDER BY entry_time DESC LIMIT 1';
         $res2 = $dbb->query($query);
         if ($row2 = $res2->fetchRow()) {
