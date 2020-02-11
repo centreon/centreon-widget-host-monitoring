@@ -72,20 +72,17 @@ try {
     $successMsg = _("External Command successfully submitted... Exiting window...");
     $result = 0;
 
-    //retrieving the default timezone is the user didn't choose one
-    $gmt = $centreon->user->getMyGMT();
-    if (!$gmt) {
-        $gmt = date_default_timezone_get();
-    }
-    $defaultDuration = 7200; // Hardcoded
+    $defaultDuration = 7200;
     $defaultScale = 's';
-    $duration = $defaultDuration;
-    if ($defaultScale == 'm') {
-        $duration *= 60;
-    } elseif ($defaultScale == 'h') {
-        $duration *= 3600;
-    } elseif ($defaultScale == 'd') {
-        $duration *= 86400;
+    if (isset($centreon->optGen['monitoring_dwt_duration']) &&
+        $centreon->optGen['monitoring_dwt_duration']
+    ) {
+        $defaultDuration = $centreon->optGen['monitoring_dwt_duration'];
+        if (isset($centreon->optGen['monitoring_dwt_duration_scale']) &&
+            $centreon->optGen['monitoring_dwt_duration_scale']
+        ) {
+            $defaultScale = $centreon->optGen['monitoring_dwt_duration_scale'];
+        }
     }
 
     if ($cmd == 72 || $cmd == 75) {
@@ -148,29 +145,12 @@ try {
             $template->display('acknowledge.ihtml');
         } elseif ($cmd == 75) {
 
-            $hourStart = $centreon->CentreonGMT->getDate("H", time(), $gmt);
-            $minuteStart = $centreon->CentreonGMT->getDate("i", time(), $gmt);
-
-            $hourEnd = $centreon->CentreonGMT->getDate("H", time() + $duration, $gmt);
-            $minuteEnd = $centreon->CentreonGMT->getDate("i", time() + $duration, $gmt);
-            
             $template->assign('downtimeHostSvcLabel', _("Set downtime on services of hosts"));
             $template->assign('defaultMessage', sprintf(_('Downtime set by %s'), $centreon->user->alias));
             $template->assign('titleLabel', _("Host Downtime"));
             $template->assign('submitLabel', _("Set Downtime"));
-            $template->assign('defaultSecondDuration', $defaultScale == 's' ? $defaultDuration : '0');
-            $template->assign('defaultHourDuration', $defaultScale == 'h' ? $defaultDuration : '0');
-            $template->assign('defaultMinuteDuration', $defaultScale == 'm' ? $defaultDuration : '0');
-            $template->assign('defaultDayDuration',  $defaultScale == 'd' ? $defaultDuration : '0');
-            $template->assign('duration', $duration); // In seconds
-            $template->assign('secondsLabel', _("seconds"));
-            $template->assign('daysLabel', _("days"));
-            $template->assign('hoursLabel', _("hours"));
-            $template->assign('minutesLabel', _("minutes"));
-            $template->assign('defaultHourStart',$hourStart);
-            $template->assign('defaultMinuteStart', $minuteStart);
-            $template->assign('defaultHourEnd', $hourEnd);
-            $template->assign('defaultMinuteEnd', $minuteEnd);
+            $template->assign('defaultDuration', $defaultDuration);
+            $template->assign($defaultScale . 'DefaultScale', 'selected');
 
             /* default downtime options */
             $fixed_checked = '';
@@ -258,11 +238,13 @@ jQuery(function() {
 	});
 
 	//initializing datepicker and timepicker
-	initDatepicker("datepicker", "yy/mm/dd", "0");
+	jQuery(".timepicker").each(function () {
+		$(this).val(moment().tz(localStorage.getItem('realTimezone') ? localStorage.getItem('realTimezone') : moment.tz.guess()).format("HH:mm"));
+	});
 	jQuery("#start_time, #end_time").timepicker();
-
-    turnOnEvents();
-
+	initDatepicker();
+	turnOnEvents();
+	updateEndTime();
 });
 
 function closeBox()
@@ -294,15 +276,11 @@ function sendCmd()
 function toggleDurationField()
 {
 	if (jQuery("[name=fixed]").is(':checked')) {
-        jQuery("[name=secondduration]").attr('disabled', true);
-        jQuery("[name=dayduration]").attr('disabled', true);
-		jQuery("[name=hourduration]").attr('disabled', true);
-		jQuery("[name=minuteduration]").attr('disabled', true);
+		jQuery("[name=duration]").attr('disabled', true);
+		jQuery("[name=duration_scale]").attr('disabled', true);
 	} else {
-		jQuery("[name=dayduration]").removeAttr('disabled');
-		jQuery("[name=hourduration]").removeAttr('disabled');
-		jQuery("[name=minuteduration]").removeAttr('disabled');
-        jQuery("[name=secondduration]").removeAttr('disabled');
+		jQuery("[name=duration]").removeAttr('disabled');
+		jQuery("[name=duration_scale]").removeAttr('disabled');
 	}
 }
 </script>
