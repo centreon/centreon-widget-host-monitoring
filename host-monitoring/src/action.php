@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright 2005-2020 Centreon
  * Centreon is developed by : Julien Mathis and Romain Le Merlus under
@@ -46,9 +47,10 @@ require_once $centreon_path . 'www/class/centreonExternalCommand.class.php';
 session_start();
 
 try {
-    if (!isset($_SESSION['centreon']) ||
-        !isset($_REQUEST['cmd']) ||
-        !isset($_REQUEST['selection'])
+    if (
+        !isset($_SESSION['centreon'])
+        || !isset($_REQUEST['cmd'])
+        || !isset($_REQUEST['selection'])
     ) {
         throw new Exception('Missing data');
     }
@@ -62,7 +64,7 @@ try {
 
     $selection = '';
     $hosts = explode(",", $_GET['selection']);
-    foreach($hosts as $host) {
+    foreach ($hosts as $host) {
         $selection .= (filter_var($host, FILTER_VALIDATE_INT) ?: 0) . ',';
     }
     $selection = rtrim($selection, ',');
@@ -74,12 +76,14 @@ try {
 
     $defaultDuration = 7200;
     $defaultScale = 's';
-    if (isset($centreon->optGen['monitoring_dwt_duration']) &&
-        $centreon->optGen['monitoring_dwt_duration']
+    if (
+        isset($centreon->optGen['monitoring_dwt_duration'])
+        && $centreon->optGen['monitoring_dwt_duration']
     ) {
         $defaultDuration = $centreon->optGen['monitoring_dwt_duration'];
-        if (isset($centreon->optGen['monitoring_dwt_duration_scale']) &&
-            $centreon->optGen['monitoring_dwt_duration_scale']
+        if (
+            isset($centreon->optGen['monitoring_dwt_duration_scale'])
+            && $centreon->optGen['monitoring_dwt_duration_scale']
         ) {
             $defaultScale = $centreon->optGen['monitoring_dwt_duration_scale'];
         }
@@ -109,8 +113,9 @@ try {
 
             /* default ack options */
             $persistent_checked = '';
-            if (isset($centreon->optGen['monitoring_ack_persistent']) &&
-                $centreon->optGen['monitoring_ack_persistent']
+            if (
+                isset($centreon->optGen['monitoring_ack_persistent'])
+                && $centreon->optGen['monitoring_ack_persistent']
             ) {
                 $persistent_checked = 'checked';
             }
@@ -135,8 +140,9 @@ try {
             $template->assign('process_service_checked', $process_service_checked);
 
             $force_active_checked = '';
-            if (isset($centreon->optGen['monitoring_ack_active_checks']) &&
-                $centreon->optGen['monitoring_ack_active_checks']
+            if (
+                isset($centreon->optGen['monitoring_ack_active_checks'])
+                && $centreon->optGen['monitoring_ack_active_checks']
             ) {
                 $force_active_checked = 'checked';
             }
@@ -144,7 +150,6 @@ try {
 
             $template->display('acknowledge.ihtml');
         } elseif ($cmd == 75) {
-
             $template->assign('downtimeHostSvcLabel', _("Set downtime on services of hosts"));
             $template->assign('defaultMessage', sprintf(_('Downtime set by %s'), $centreon->user->alias));
             $template->assign('titleLabel', _("Host Downtime"));
@@ -168,31 +173,31 @@ try {
             $template->display('downtime.ihtml');
         }
     } else {
-        $command = "";
+        $command = '';
         switch ($cmd) {
-                /* remove ack */
-                case 73 :
-                    $command = "REMOVE_HOST_ACKNOWLEDGEMENT;%s";
-                    break;
-                /* enable notif */
-                case 82 :
-                    $command = "ENABLE_HOST_NOTIFICATIONS;%s";
-                    break;
-                /* disable notif */
-                case 83 :
-                    $command = "DISABLE_HOST_NOTIFICATIONS;%s";
-                    break;
-                /* enable check */
-                case 92 :
-                    $command = "ENABLE_HOST_CHECK;%s";
-                    break;
-                /* disable check */
-                case 93 :
-                    $command = "DISABLE_HOST_CHECK;%s";
-                    break;
-                default :
-                    throw new Exception('Unknown command');
-                    break;
+            /* remove ack */
+            case 73:
+                $command = "REMOVE_HOST_ACKNOWLEDGEMENT;%s";
+                break;
+            /* enable notif */
+            case 82:
+                $command = "ENABLE_HOST_NOTIFICATIONS;%s";
+                break;
+            /* disable notif */
+            case 83:
+                $command = "DISABLE_HOST_NOTIFICATIONS;%s";
+                break;
+            /* enable check */
+            case 92:
+                $command = "ENABLE_HOST_CHECK;%s";
+                break;
+            /* disable check */
+            case 93:
+                $command = "DISABLE_HOST_CHECK;%s";
+                break;
+            default:
+                throw new Exception('Unknown command');
+                break;
         }
         if ($command != "") {
             $externalCommandMethod = 'set_process_command';
@@ -202,8 +207,8 @@ try {
             foreach ($hosts as $hostId) {
                 $hostId = filter_var($hostId, FILTER_VALIDATE_INT) ?: 0;
                 if ($hostId !== 0) {
-                    $externalCmd->$externalCommandMethod(sprintf(
-                        $command, $hostObj->getHostName($hostId)),
+                    $externalCmd->$externalCommandMethod(
+                        sprintf($command, $hostObj->getHostName($hostId)),
                         $hostObj->getHostPollerId($hostId)
                     );
                 }
@@ -219,70 +224,72 @@ try {
 <div id='result'></div>
 
 <script type='text/javascript'>
-var result = <?php echo $result;?>;
-var successMsg = "<?php echo $successMsg;?>";
+    var result = <?php echo $result;?>;
+    var successMsg = "<?php echo $successMsg;?>";
 
-jQuery(function() {
-	if (result) {
-		jQuery("#result").html(successMsg);
-		setTimeout('closeBox()', 2000);
-	}
-	jQuery("#submit").click(function() {
-			sendCmd();
-	});
-	//$("#ListTable").styleTable();
-	jQuery("#submit").button();
-	toggleDurationField();
-	jQuery("[name=fixed]").click(function() {
-		toggleDurationField();
-	});
+    jQuery(function() {
+        if (result) {
+            jQuery("#result").html(successMsg);
+            setTimeout('closeBox()', 2000);
+        }
+        jQuery("#submit").click(function() {
+            sendCmd();
+        });
+        jQuery("#submit").button();
+        toggleDurationField();
+        jQuery("[name=fixed]").click(function() {
+            toggleDurationField();
+        });
 
-	//initializing datepicker and timepicker
-	jQuery(".timepicker").each(function () {
-		if (! $(this).val()) {
-			$(this).val(moment().tz(localStorage.getItem('realTimezone') ? localStorage.getItem('realTimezone') : moment.tz.guess()).format("HH:mm"));
-		}
-	});
-	jQuery("#start_time, #end_time").timepicker();
-	initDatepicker();
-	turnOnEvents();
-	updateEndTime();
-});
+        //initializing datepicker and timepicker
+        jQuery(".timepicker").each(function () {
+            if (!$(this).val()) {
+                $(this).val(moment().tz(localStorage.getItem('realTimezone')
+                    ? localStorage.getItem('realTimezone')
+                    : moment.tz.guess()).format("HH:mm")
+                );
+            }
+        });
+        jQuery("#start_time, #end_time").timepicker();
+        initDatepicker();
+        turnOnEvents();
+        updateEndTime();
+    });
 
-function closeBox()
-{
-	jQuery('#WidgetDowntime').centreonPopin('close');
-}
+    function closeBox()
+    {
+        jQuery('#WidgetDowntime').centreonPopin('close');
+    }
 
-function sendCmd()
-{
-	fieldResult = true;
-	if (jQuery("#comment") && !jQuery("#comment").val()) {
-		fieldResult = false;
-	}
-	if (fieldResult == false) {
-		jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
-		return false;
-	}
-	jQuery.ajax({
-				type	:	"POST",
-				url	: "./widgets/host-monitoring/src/sendCmd.php",
-				data	: 	jQuery("#Form").serialize(),
-				success	:	function() {
-								jQuery("#result").html(successMsg);
-								setTimeout('closeBox()', 2000);
-							}
-		   });
-}
+    function sendCmd()
+    {
+        fieldResult = true;
+        if (jQuery("#comment") && !jQuery("#comment").val()) {
+            fieldResult = false;
+        }
+        if (fieldResult == false) {
+            jQuery("#result").html("<font color=red><b>Please fill all mandatory fields.</b></font>");
+            return false;
+        }
+        jQuery.ajax({
+            type : "POST",
+            url : "./widgets/host-monitoring/src/sendCmd.php",
+            data : jQuery("#Form").serialize(),
+            success : function() {
+                jQuery("#result").html(successMsg);
+                setTimeout('closeBox()', 2000);
+            }
+       });
+    }
 
-function toggleDurationField()
-{
-	if (jQuery("[name=fixed]").is(':checked')) {
-		jQuery("[name=duration]").attr('disabled', true);
-		jQuery("[name=duration_scale]").attr('disabled', true);
-	} else {
-		jQuery("[name=duration]").removeAttr('disabled');
-		jQuery("[name=duration_scale]").removeAttr('disabled');
-	}
-}
+    function toggleDurationField()
+    {
+        if (jQuery("[name=fixed]").is(':checked')) {
+            jQuery("[name=duration]").attr('disabled', true);
+            jQuery("[name=duration_scale]").attr('disabled', true);
+        } else {
+            jQuery("[name=duration]").removeAttr('disabled');
+            jQuery("[name=duration_scale]").removeAttr('disabled');
+        }
+    }
 </script>
