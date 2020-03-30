@@ -76,15 +76,9 @@ try {
 
     $defaultDuration = 7200;
     $defaultScale = 's';
-    if (
-        isset($centreon->optGen['monitoring_dwt_duration'])
-        && $centreon->optGen['monitoring_dwt_duration']
-    ) {
+    if (!empty($centreon->optGen['monitoring_dwt_duration'])) {
         $defaultDuration = $centreon->optGen['monitoring_dwt_duration'];
-        if (
-            isset($centreon->optGen['monitoring_dwt_duration_scale'])
-            && $centreon->optGen['monitoring_dwt_duration_scale']
-        ) {
+        if (!empty($centreon->optGen['monitoring_dwt_duration_scale'])) {
             $defaultScale = $centreon->optGen['monitoring_dwt_duration_scale'];
         }
     }
@@ -113,37 +107,31 @@ try {
 
             /* default ack options */
             $persistent_checked = '';
-            if (
-                isset($centreon->optGen['monitoring_ack_persistent'])
-                && $centreon->optGen['monitoring_ack_persistent']
-            ) {
+            if (!empty($centreon->optGen['monitoring_ack_persistent'])) {
                 $persistent_checked = 'checked';
             }
             $template->assign('persistent_checked', $persistent_checked);
 
             $sticky_checked = '';
-            if (isset($centreon->optGen['monitoring_ack_sticky']) && $centreon->optGen['monitoring_ack_sticky']) {
+            if (!empty($centreon->optGen['monitoring_ack_sticky'])) {
                 $sticky_checked = 'checked';
             }
             $template->assign('sticky_checked', $sticky_checked);
 
             $notify_checked = '';
-            if (isset($centreon->optGen['monitoring_ack_notify']) && $centreon->optGen['monitoring_ack_notify']) {
+            if (!empty($centreon->optGen['monitoring_ack_notify'])) {
                 $notify_checked = 'checked';
             }
             $template->assign('notify_checked', $notify_checked);
 
             $process_service_checked = '';
-            if (isset($centreon->optGen['monitoring_ack_svc']) && $centreon->optGen['monitoring_ack_svc']) {
+            if (!empty($centreon->optGen['monitoring_ack_svc'])) {
                 $process_service_checked = 'checked';
             }
             $template->assign('process_service_checked', $process_service_checked);
 
             $force_active_checked = '';
-            if (
-                isset($centreon->optGen['monitoring_ack_active_checks'])
-                && $centreon->optGen['monitoring_ack_active_checks']
-            ) {
+            if (!empty($centreon->optGen['monitoring_ack_active_checks'])) {
                 $force_active_checked = 'checked';
             }
             $template->assign('force_active_checked', $force_active_checked);
@@ -155,21 +143,24 @@ try {
             $template->assign('titleLabel', _("Host Downtime"));
             $template->assign('submitLabel', _("Set Downtime"));
             $template->assign('defaultDuration', $defaultDuration);
+            $template->assign('sDurationLabel', _("seconds"));
+            $template->assign('mDurationLabel', _("minutes"));
+            $template->assign('hDurationLabel', _("hours"));
+            $template->assign('dDurationLabel', _("days"));
             $template->assign($defaultScale . 'DefaultScale', 'selected');
 
             /* default downtime options */
             $fixed_checked = '';
-            if (isset($centreon->optGen['monitoring_dwt_fixed']) && $centreon->optGen['monitoring_dwt_fixed']) {
+            if (!empty($centreon->optGen['monitoring_dwt_fixed'])) {
                 $fixed_checked = 'checked';
             }
             $template->assign('fixed_checked', $fixed_checked);
 
             $process_service_checked = '';
-            if (isset($centreon->optGen['monitoring_dwt_svc']) && $centreon->optGen['monitoring_dwt_svc']) {
+            if (!empty($centreon->optGen['monitoring_dwt_svc'])) {
                 $process_service_checked = 'checked';
             }
             $template->assign('process_service_checked', $process_service_checked);
-
             $template->display('downtime.ihtml');
         }
     } else {
