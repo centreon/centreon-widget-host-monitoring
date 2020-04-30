@@ -236,9 +236,6 @@ if (!$centreon->user->admin) {
 }
 
 $orderBy = 'host_name ASC';
-if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
-    $orderBy = $preferences['order_by'];
-}
 
 if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
     $aOrder = explode(' ', $preferences['order_by']);
