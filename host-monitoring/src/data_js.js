@@ -39,7 +39,7 @@ jQuery(function () {
             current_page: pageNumber,
             num_edge_entries : _num_edge_entries,
             num_display_entries : _num_display_entries,
-            callback	: paginationCallback
+            callback : paginationCallback
         }).append("<br/>");
     }
     
