@@ -9,7 +9,7 @@
         {if $preferences.more_views == 1}
         <div id='actionBar' style='width:100%; float:left;'>
             <div id='toolBar' style='float:left;'></div>
-            <a href='./src/export.php?widgetId={$widgetId}' class="btc bt_success" style="float:right; margin-top: 8px;">Export</a>
+            <a class="btc bt_success" style="float:right; margin-top: 8px;" onclick="exportChecked()">Export</a>
             <div id='pagination' class="pagination" style='float:left;text-align:right;margin:12px 0px 10px 12px;'></div>
         </div>
         {/if}
