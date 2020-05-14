@@ -165,7 +165,23 @@ if (isset($preferences['downtime_filter']) && $preferences['downtime_filter']) {
 }
 
 if (isset($preferences['poller_filter']) && $preferences['poller_filter']) {
-    $query = CentreonUtils::conditionBuilder($query, ' instance_id = ' . $preferences['poller_filter'] . ' ');
+    $resultsPoller = explode(',', $preferences['poller_filter']);
+    $queryPoller = '';
+
+    foreach ($resultsPoller as $resultPoller) {
+        if ($queryPoller != '') {
+            $queryPoller .= ', ';
+        }
+        $queryPoller .= ':instance_id_' . $resultPoller;
+
+        $mainQueryParameters[] = [
+            'parameter' => ':instance_id_' . $resultPoller,
+            'value' => (int)$resultPoller,
+            'type' => PDO::PARAM_INT
+        ];
+    }
+    $instanceIdCondition = ' instance_id IN (' . $queryPoller . ')';
+    $query = CentreonUtils::conditionBuilder($query, $instanceIdCondition);
 }
 
 if (isset($preferences['state_type_filter']) && $preferences['state_type_filter']) {
@@ -183,9 +199,9 @@ if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
         if ($queryHg != '') {
             $queryHg .= ', ';
         }
-        $queryHg .= ":id_" . $result;
+        $queryHg .= ":hg_id_" . $result;
         $mainQueryParameters[] = [
-            'parameter' => ':id_' . $result,
+            'parameter' => ':hg_id_' . $result,
             'value' => (int)$result,
             'type' => PDO::PARAM_INT
         ];
@@ -205,9 +221,9 @@ if (!empty($preferences['display_severities']) && !empty($preferences['criticali
         if ($labels != '') {
             $labels .= ',';
         }
-        $labels .= ":id_". $p;
+        $labels .= ":severity_id_". $p;
         $mainQueryParameters[] = [
-            'parameter' => ':id_' . $p,
+            'parameter' => ':severity_id_' . $p,
             'value' => (int)$p,
             'type' => PDO::PARAM_INT
         ];
