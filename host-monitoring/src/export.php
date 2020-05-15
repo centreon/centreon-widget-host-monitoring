@@ -89,7 +89,11 @@ foreach ($exportList as $key => $hostId) {
         $hostQuery .= ', ';
     }
     $hostQuery .= ':' . $key . $hostId;
-    $mainQueryParameters[] = ['parameter' => ':' . $key . $hostId, 'value' => (int) $hostId];
+    $mainQueryParameters[] = [
+        'parameter' => ':' . $key . $hostId,
+        'value' => (int) $hostId,
+        'type' => \PDO::PARAM_INT
+    ];
 }
 
 $widgetObj = new CentreonWidget($centreon, $db);
@@ -135,7 +139,11 @@ $query = 'SELECT SQL_CALC_FOUND_ROWS
     AND h.name NOT LIKE \'_Module_%\' ';
 
 if (!empty($hostQuery)) {
+<<<<<<< HEAD
     $query .= 'AND h.host_id IN (' . $hostQuery . ') ';
+=======
+    $query .= ' AND h.host_id IN (' . $hostQuery . ') ';
+>>>>>>> f0a0d20... enh: style and missing bind type
 }
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
@@ -145,7 +153,11 @@ if (isset($preferences['host_name_search']) && $preferences['host_name_search'] 
         $search = $tab[1];
     }
     if ($op && isset($search) && $search != '') {
-        $mainQueryParameters[] = ['parameter' => ':host_name_search', 'value' => $search, 'type' => PDO::PARAM_STR];
+        $mainQueryParameters[] = [
+            'parameter' => ':host_name_search',
+            'value' => $search,
+            'type' => \PDO::PARAM_STR
+        ];
         $hostNameCondition = 'h.name ' . CentreonUtils::operandToMysqlFormat($op) . ' :host_name_search ';
         $query = CentreonUtils::conditionBuilder($query, $hostNameCondition);
     }
@@ -211,8 +223,8 @@ if (isset($preferences['hostgroup']) && $preferences['hostgroup']) {
         $queryHg .= ":id_" . $result;
         $mainQueryParameters[] = [
             'parameter' => ':id_' . $result,
-            'value' => (int)$result,
-            'type' => PDO::PARAM_INT
+            'value' => (int) $result,
+            'type' => \PDO::PARAM_INT
         ];
     }
     $hostgroupHgIdCondition = <<<SQL
@@ -234,7 +246,7 @@ if (!empty($preferences['display_severities']) && !empty($preferences['criticali
         $mainQueryParameters[] = [
             'parameter' => ':id_' . $p,
             'value' => (int)$p,
-            'type' => PDO::PARAM_INT
+            'type' => \PDO::PARAM_INT
         ];
     }
     $SeverityIdCondition =
