@@ -84,6 +84,7 @@ if (false !== strpos($_GET['list'], ',')) {
 }
 $mainQueryParameters = [];
 $hostQuery = '';
+// Check consistency, sanitize and bind values
 foreach ($exportList as $key => $hostId) {
     if (0 === (int) $hostId) {
         continue;
