@@ -73,7 +73,10 @@ $template = initSmartyTplForPopup($path, $template, './', $centreon_path);
 $centreon = $_SESSION['centreon'];
 $widgetId = filter_input(INPUT_GET, 'widgetId', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
 
-// Sanitize and concatenate selected resources for the query
+/**
+ * Sanitize and concatenate selected resources for the query
+ */
+ // Check returned list and make an array of it
 if (false !== strpos($_GET['list'], ',')) {
     $exportList = explode(',', $_GET['list']);
 } else {
