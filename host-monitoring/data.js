@@ -80,7 +80,7 @@ function exportChecked() {
     let exportList = '';
     // get checked resource list from local storage
     $(".selection").each(function () {
-        var itemSaved = 'w_hm_' + $(this).attr('id');
+        let itemSaved = 'w_hm_' + $(this).attr('id');
         let toRemove = 'w_hm_selection_'
         if (localStorage.getItem(itemSaved)) {
             exportList += itemSaved.substring(toRemove.length, itemSaved.length) + ',';
