@@ -87,6 +87,7 @@ $hostQuery = '';
 // Check consistency, sanitize and bind values
 foreach ($exportList as $key => $hostId) {
     if (0 === (int) $hostId) {
+        // skip non consistent dat
         continue;
     }
     if (!empty($hostQuery)) {
