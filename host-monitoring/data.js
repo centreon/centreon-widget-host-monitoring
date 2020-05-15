@@ -90,7 +90,9 @@ function exportChecked() {
     exportList = exportList.substring(0, exportList.length - 1);
 
     // if at least one resource is found, redirect to the export.php
-    if (0 <= exportList.length) {
-        window.location.href = './src/export.php?widgetId=' + widgetId + '&hostList=' + exportList;
+    if (0 < exportList.length) {
+        window.location.href = './src/export.php?widgetId=' + widgetId + '&list=' + exportList;
+    } else {
+        alert('Please select at least one resource');
     }
 }

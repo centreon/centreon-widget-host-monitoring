@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright 2005-2020 Centreon
  * Centreon is developed by : Julien Mathis and Romain Le Merlus under
@@ -50,7 +51,8 @@ require_once $centreon_path . 'www/class/centreonMedia.class.php';
 require_once $centreon_path . 'www/class/centreonCriticality.class.php';
 
 session_start();
-if (!isset($_SESSION['centreon']) || !isset($_REQUEST['widgetId'])) {
+if (!isset($_SESSION['centreon'], $_GET['widgetId'], $_GET['list'])) {
+    // As the header is already defined, if one of these parameters is missing, an empty CSV is exported
     exit;
 }
 
@@ -69,8 +71,26 @@ $template = new Smarty();
 $template = initSmartyTplForPopup($path, $template, './', $centreon_path);
 
 $centreon = $_SESSION['centreon'];
-$widgetId = filter_input(INPUT_REQUEST, 'widgetId', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
+$widgetId = filter_input(INPUT_GET, 'widgetId', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
+
+// Sanitize and concatenate selected resources for the query
+if (false !== strpos($_GET['list'], ',')) {
+    $exportList = explode(',', $_GET['list']);
+} else {
+    $exportList[] = $_GET['list'];
+}
 $mainQueryParameters = [];
+$hostQuery = '';
+foreach ($exportList as $key => $hostId) {
+    if (0 === (int) $hostId) {
+        continue;
+    }
+    if (!empty($hostQuery)) {
+        $hostQuery .= ', ';
+    }
+    $hostQuery .= ':' . $key . $hostId;
+    $mainQueryParameters[] = ['parameter' => ':' . $key . $hostId, 'value' => (int) $hostId];
+}
 
 $widgetObj = new CentreonWidget($centreon, $db);
 $preferences = $widgetObj->getWidgetPreferences($widgetId);
@@ -78,6 +98,7 @@ $preferences = $widgetObj->getWidgetPreferences($widgetId);
 // Get status labels
 $stateLabels = getLabels();
 
+// Request
 $query = 'SELECT SQL_CALC_FOUND_ROWS
     h.host_id,
     h.name,
@@ -112,6 +133,10 @@ $query = 'SELECT SQL_CALC_FOUND_ROWS
         ON (cv2.host_id = h.host_id AND cv2.service_id IS NULL AND cv2.name = \'CRITICALITY_ID\')
     WHERE enabled = 1
     AND h.name NOT LIKE \'_Module_%\' ';
+
+if (!empty($hostQuery)) {
+    $query .= 'AND h.host_id IN (' . $hostQuery . ') ';
+}
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
     $tab = explode(' ', $preferences['host_name_search']);
