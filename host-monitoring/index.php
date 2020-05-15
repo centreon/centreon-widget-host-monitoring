@@ -51,7 +51,7 @@ try {
     $db = $dependencyInjector['configuration_db'];
     $widgetObj = new CentreonWidget($centreon, $db);
     $preferences = $widgetObj->getWidgetPreferences($widgetId);
-    $autoRefresh = filter_var($preferences['autoRefresh'], FILTER_VALIDATE_INT);
+    $autoRefresh = filter_var($preferences['refresh_interval'], FILTER_VALIDATE_INT);
     if ($autoRefresh === false || $autoRefresh < 5) {
         $autoRefresh = 30;
     }
