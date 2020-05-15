@@ -139,11 +139,7 @@ $query = 'SELECT SQL_CALC_FOUND_ROWS
     AND h.name NOT LIKE \'_Module_%\' ';
 
 if (!empty($hostQuery)) {
-<<<<<<< HEAD
     $query .= 'AND h.host_id IN (' . $hostQuery . ') ';
-=======
-    $query .= ' AND h.host_id IN (' . $hostQuery . ') ';
->>>>>>> f0a0d20... enh: style and missing bind type
 }
 
 if (isset($preferences['host_name_search']) && $preferences['host_name_search'] != "") {
