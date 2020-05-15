@@ -88,9 +88,9 @@ foreach ($exportList as $key => $hostId) {
     if (!empty($hostQuery)) {
         $hostQuery .= ', ';
     }
-    $hostQuery .= ':' . $key . $hostId;
+    $hostQuery .= ':' . $key . 'host' . $hostId;
     $mainQueryParameters[] = [
-        'parameter' => ':' . $key . $hostId,
+        'parameter' => ':' . $key . 'host' . $hostId,
         'value' => (int) $hostId,
         'type' => \PDO::PARAM_INT
     ];
