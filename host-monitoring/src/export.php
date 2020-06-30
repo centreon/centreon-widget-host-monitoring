@@ -63,10 +63,6 @@ $dbb = $dependencyInjector['realtime_db'];
 $criticality = new CentreonCriticality($db);
 $aStateType = ['1' => 'H', '0' => 'S'];
 
-$path = $centreon_path . 'www/widgets/host-monitoring/src/';
-$template = new Smarty();
-$template = initSmartyTplForPopup($path, $template, './', $centreon_path);
-
 $centreon = $_SESSION['centreon'];
 $widgetId = filter_input(INPUT_GET, 'widgetId', FILTER_VALIDATE_INT, ['options' => ['default' => 0]]);
 
