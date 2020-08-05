@@ -104,17 +104,21 @@ jQuery( function() {
                     return tmp[1];
     		    })
                 .get().join(",");
-
             if (checkValues != '') {
                 var url = "./widgets/host-monitoring/src/action.php?widgetId=" + widgetId +
                     "&selection=" + checkValues + "&cmd=" + jQuery(this).val();
                 parent.jQuery('#WidgetDowntime').parent().remove();
                 var popin = parent.jQuery('<div id="WidgetDowntime">');
 
-                popin.centreonPopin({
+                if (popin.centreonPopin({
                     open:true,
                     url:url
-                });
+                })) {
+                    $.each(checkValues.split(','), function(index, value) {
+                        localStorage.removeItem('w_hm_selection_' + value);
+                        $('#selection_' + value).prop('checked', false);
+                    });
+                }
 
            } else {
                alert("<?php echo _('Please select one or more items'); ?>");
