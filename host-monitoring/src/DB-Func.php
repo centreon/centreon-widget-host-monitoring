@@ -37,10 +37,10 @@
 function getColors($db)
 {
     $stateColors = array(
-        0 => "#88b917",
-        1 => "#e00b3d",
-        2 => "#82CFD8",
-        4 => "#2ad1d4"
+        0 => "#88B917",
+        1 => "#E00B3D",
+        2 => "#818285",
+        4 => "#2AD1D4"
     );
 
     // Get configured colors
