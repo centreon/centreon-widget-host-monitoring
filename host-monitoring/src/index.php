@@ -232,8 +232,19 @@ if (!$centreon->user->admin) {
 }
 
 $orderBy = 'host_name ASC';
+
 if (isset($preferences['order_by']) && trim($preferences['order_by']) != '') {
-    $orderBy = $preferences['order_by'];
+    $aOrder = explode(' ', $preferences['order_by']);
+    if (in_array('last_state_change', $aOrder) || in_array('last_hard_state_change', $aOrder)) {
+        if ($aOrder[1] == 'DESC') {
+            $order = 'ASC';
+        } else {
+            $order = 'DESC';
+        }
+        $orderBy = $aOrder[0] . ' ' . $order;
+    } else {
+        $orderBy = $preferences['order_by'];
+    }
 }
 
 $query .= " ORDER BY {$orderBy}";
